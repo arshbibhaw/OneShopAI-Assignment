@@ -207,8 +207,9 @@ router.get('/requests/me', authenticateToken, async (req: AuthRequest, res: Resp
 
 router.get('/requests/:id', async (req: Request, res: Response) => {
   try {
+    const requestId = req.params.id as string;
     const request = await prisma.collabRequest.findUnique({
-      where: { id: req.params.id },
+      where: { id: requestId },
       include: {
         owner: { select: { id: true, name: true, username: true, avatar: true } },
         requiredSkills: true,
@@ -226,9 +227,10 @@ router.get('/requests/:id', async (req: Request, res: Response) => {
       res.status(404).json({ error: 'Request not found' });
       return;
     }
+    const reqData = request as any;
     res.json({
       ...request,
-      requiredSkills: request.requiredSkills ? request.requiredSkills.map((s: any) => s.name) : []
+      requiredSkills: reqData.requiredSkills ? reqData.requiredSkills.map((s: any) => s.name) : []
     });
   } catch (error) {
     console.error('Error fetching collab details:', error);
@@ -255,7 +257,8 @@ router.put('/requests/:id/members/:memberId', authenticateToken, validateRequest
       return;
     }
 
-    const { id, memberId } = req.params;
+    const id = req.params.id as string;
+    const memberId = req.params.memberId as string;
     const { status, rejectionReason } = req.body;
 
     const request = await prisma.collabRequest.findUnique({ where: { id } });
@@ -326,7 +329,7 @@ router.put('/requests/:id', authenticateToken, validateRequest(updateProjectSche
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { isClosed, title, description, openRoles } = req.body;
 
     const request = await prisma.collabRequest.findUnique({ where: { id } });

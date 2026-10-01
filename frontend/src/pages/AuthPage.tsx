@@ -1,7 +1,8 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShieldAlert, UserPlus, LogIn, Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,7 +40,7 @@ export default function AuthPage() {
           username: formData.username 
         };
 
-    fetch(`http://localhost:4000/api/auth${endpoint}`, {
+    fetch(`${API_BASE_URL}/api/auth${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

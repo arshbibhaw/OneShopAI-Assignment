@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 interface User {
   id: string;
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserState(JSON.parse(storedUser));
       
       // Optionally fetch fresh user data here if needed
-      fetch('http://localhost:4000/api/auth/me', {
+      fetch(`${API_BASE_URL}/api/auth/me`, {
         headers: { 'Authorization': `Bearer ${storedToken}` }
       })
       .then(res => res.json())

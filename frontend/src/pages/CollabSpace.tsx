@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Card, CardContent, CardFooter, CardTitle } from '../components/ui/card';
 import { Search, User, Pencil, LogIn, Mail, Lock, Plus, X, MapPin, GraduationCap, Briefcase, Rocket, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 interface CollabRequest {
   id: string;
@@ -16,6 +17,7 @@ interface CollabRequest {
   openRoles?: string;
   isClosed?: boolean;
   owner: { id: string; name: string; username?: string; avatar: string };
+  members?: { id: string; status: string }[];
   createdAt: string;
 }
 
@@ -94,7 +96,6 @@ export default function CollabSpace() {
   // Manage Requests State
   const [selectedProjectForManage, setSelectedProjectForManage] = useState<any>(null);
   const [manageTab, setManageTab] = useState<'pending' | 'active'>('pending');
-  const [rejectionReason, setRejectionReason] = useState('');
 
   // Profile Form
   const [profileData, setProfileData] = useState({
@@ -113,11 +114,11 @@ export default function CollabSpace() {
     setIsLoading(true);
     setError(null);
     Promise.all([
-      fetch('http://localhost:4000/api/collab/requests').then(res => {
+      fetch(`${API_BASE_URL}/api/collab/requests`).then(res => {
         if (!res.ok) throw new Error('Failed to fetch requests');
         return res.json();
       }),
-      fetch('http://localhost:4000/api/collab/profiles').then(res => {
+      fetch(`${API_BASE_URL}/api/collab/profiles`).then(res => {
         if (!res.ok) throw new Error('Failed to fetch profiles');
         return res.json();
       })
@@ -135,7 +136,7 @@ export default function CollabSpace() {
 
   const fetchMyData = () => {
     if (!token) return;
-    fetch('http://localhost:4000/api/collab/requests/me', {
+    fetch(`${API_BASE_URL}/api/collab/requests/me`, {
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'no-store'
     })
@@ -160,7 +161,7 @@ export default function CollabSpace() {
   const handleAuthSubmit = (e: FormEvent) => {
     e.preventDefault();
     const endpoint = isLogin ? '/login' : '/register';
-    fetch(`http://localhost:4000/api/auth${endpoint}`, {
+    fetch(`${API_BASE_URL}/api/auth${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(authData)
@@ -182,7 +183,7 @@ export default function CollabSpace() {
     e.preventDefault();
     if (!token) return setIsAuthModalOpen(true);
 
-    fetch('http://localhost:4000/api/collab/requests', {
+    fetch(`${API_BASE_URL}/api/collab/requests`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -211,7 +212,7 @@ export default function CollabSpace() {
     e.preventDefault();
     if (!token) return setIsAuthModalOpen(true);
 
-    fetch('http://localhost:4000/api/collab/profile', {
+    fetch(`${API_BASE_URL}/api/collab/profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -257,7 +258,7 @@ export default function CollabSpace() {
     e.preventDefault();
     if (!token || !joinProjectTarget) return;
     
-    fetch(`http://localhost:4000/api/collab/requests/${joinProjectTarget.id}/join`, {
+    fetch(`${API_BASE_URL}/api/collab/requests/${joinProjectTarget.id}/join`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -280,7 +281,7 @@ export default function CollabSpace() {
 
   const openManageRequests = (id: string) => {
     if (!token) return;
-    fetch(`http://localhost:4000/api/collab/requests/${id}`, {
+    fetch(`${API_BASE_URL}/api/collab/requests/${id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -298,7 +299,7 @@ export default function CollabSpace() {
 
   const handleUpdateMemberStatus = (memberId: string, status: string, reason?: string) => {
     if (!token || !selectedProjectForManage) return;
-    fetch(`http://localhost:4000/api/collab/requests/${selectedProjectForManage.id}/members/${memberId}`, {
+    fetch(`${API_BASE_URL}/api/collab/requests/${selectedProjectForManage.id}/members/${memberId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -319,7 +320,7 @@ export default function CollabSpace() {
 
   const handleLeaveProject = (requestId: string, memberId: string, status: string) => {
     if (!token) return;
-    fetch(`http://localhost:4000/api/collab/requests/${requestId}/members/${memberId}`, {
+    fetch(`${API_BASE_URL}/api/collab/requests/${requestId}/members/${memberId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -340,7 +341,7 @@ export default function CollabSpace() {
 
   const handleToggleProjectStatus = () => {
     if (!token || !selectedProjectForManage) return;
-    fetch(`http://localhost:4000/api/collab/requests/${selectedProjectForManage.id}`, {
+    fetch(`${API_BASE_URL}/api/collab/requests/${selectedProjectForManage.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1167,7 +1168,7 @@ export default function CollabSpace() {
                         </div>
                       </div>
                       <span className="text-slate-500 text-[12px] font-medium ml-1 truncate max-w-[150px]">
-                        <span>{req.creator?.filter((m: any) => m.status === 'accepted').length || 0} members</span>
+                        <span>{req.members?.filter((m: any) => m.status === 'accepted').length || 0} members</span>
                       </span>
                     </div>
                     <button onClick={() => openJoinModal(req)} className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-6 py-2 rounded-full font-bold text-[14px] transition-colors shadow-sm">

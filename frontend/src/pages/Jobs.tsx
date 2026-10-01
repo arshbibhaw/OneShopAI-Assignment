@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Link } from 'react-router-dom';
 import { Search, ChevronDown, ChevronLeft, ChevronRight, Bookmark, Check, Trash2, Plus, X as CloseIcon, Calendar, Upload, Bold, Italic, Underline, List, ListOrdered, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 interface Job {
   id: string;
@@ -139,7 +140,7 @@ export default function Jobs() {
   const fetchJobs = () => {
     setIsLoading(true);
     setError(null);
-    fetch(`http://localhost:4000/api/jobs?search=${search}&page=${page}&limit=${limit}`)
+    fetch(`${API_BASE_URL}/api/jobs?search=${search}&page=${page}&limit=${limit}`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch jobs');
         return res.json();
@@ -160,7 +161,7 @@ export default function Jobs() {
 
   const fetchApplications = () => {
     if (!user || !token) return;
-    fetch(`http://localhost:4000/api/jobs/applications/user/${user.id}`, {
+    fetch(`${API_BASE_URL}/api/jobs/applications/user/${user.id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -199,7 +200,7 @@ export default function Jobs() {
       return;
     }
     
-    fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
+    fetch(`${API_BASE_URL}/api/jobs/${id}/apply`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ export default function Jobs() {
     if (!user) return;
     if (!window.confirm('Are you sure you want to withdraw your application?')) return;
     
-    fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
+    fetch(`${API_BASE_URL}/api/jobs/${id}/apply`, {
       method: 'DELETE',
       headers: { 
         'Content-Type': 'application/json',
@@ -250,7 +251,7 @@ export default function Jobs() {
 
   const handlePostSubmit = (e: FormEvent) => {
     e.preventDefault();
-    fetch('http://localhost:4000/api/jobs', {
+    fetch(`${API_BASE_URL}/api/jobs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

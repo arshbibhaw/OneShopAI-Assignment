@@ -2,6 +2,7 @@ import { useEffect, useState, type MouseEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 export default function JobDetails() {
   const { id } = useParams();
@@ -11,7 +12,7 @@ export default function JobDetails() {
   const [appStatus, setAppStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:4000/api/jobs/${id}`)
+    fetch(`${API_BASE_URL}/api/jobs/${id}`)
       .then(res => res.json())
       .then(data => {
         setJob(data);
@@ -25,7 +26,7 @@ export default function JobDetails() {
 
   useEffect(() => {
     if (user && token && id) {
-      fetch(`http://localhost:4000/api/jobs/applications/user/${user.id}`, {
+      fetch(`${API_BASE_URL}/api/jobs/applications/user/${user.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -47,7 +48,7 @@ export default function JobDetails() {
       alert('Please log in to apply.');
       return;
     }
-    fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
+    fetch(`${API_BASE_URL}/api/jobs/${id}/apply`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ export default function JobDetails() {
     if (!user) return;
     if (!window.confirm('Are you sure you want to withdraw your application?')) return;
     
-    fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
+    fetch(`${API_BASE_URL}/api/jobs/${id}/apply`, {
       method: 'DELETE',
       headers: { 
         'Content-Type': 'application/json',

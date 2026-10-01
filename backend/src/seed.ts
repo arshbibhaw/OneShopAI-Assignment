@@ -2,472 +2,410 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-function mapSkills(skillsStr: string) {
+async function getOrCreateSkill(name: string) {
+  const trimmed = name.trim();
+  return prisma.skill.upsert({
+    where: { name: trimmed },
+    update: {},
+    create: { name: trimmed }
+  });
+}
+
+async function mapSkills(skillsStr: string) {
+  const names = skillsStr.split(',').map(s => s.trim()).filter(Boolean);
+  for (const name of names) {
+    await getOrCreateSkill(name);
+  }
   return {
-    connectOrCreate: skillsStr.split(',').map(s => ({
-      where: { name: s },
-      create: { name: s }
-    }))
+    connect: names.map(name => ({ name }))
   };
 }
 
 async function main() {
-  console.log('Seeding database...');
+  console.log('Clearing database...');
   
   await prisma.job.deleteMany();
   await prisma.collabMember.deleteMany();
   await prisma.collabRequest.deleteMany();
   await prisma.profile.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.skill.deleteMany();
 
-  // Create Users
-  const user1 = await prisma.user.create({
-    data: {
+  console.log('Seeding users sequentially...');
+  const usersData = [
+    {
       email: 'arsh@oneshopai.com',
       username: 'arsh',
       name: 'Arsh',
-      profile: {
-        create: {
-          bio: 'Full-stack developer building cool AI tools.',
-          skills: mapSkills('React,Node.js,PostgreSQL,Tailwind CSS'),
-          currentRole: 'founder',
-          organization: 'OneShopAI',
-          location: 'Bangalore, India',
-          linkedinUrl: 'https://linkedin.com/in/arsh',
-          githubUrl: 'https://github.com/arsh'
-        }
-      }
-    }
-  });
-
-  const user2 = await prisma.user.create({
-    data: {
+      bio: 'Full-stack developer building AI tools.',
+      skills: 'React,Node.js,PostgreSQL,Tailwind CSS',
+      currentRole: 'founder',
+      organization: 'OneShopAI',
+      location: 'Bangalore, India'
+    },
+    {
       email: 'sam@oneshopai.com',
       username: 'sam',
       name: 'Sam',
-      profile: {
-        create: {
-          bio: 'UI/UX Designer who occasionally codes. Love animations.',
-          skills: mapSkills('Figma,Framer Motion,React,CSS'),
-          currentRole: 'employee',
-          organization: 'Figma',
-          location: 'San Francisco, CA',
-          linkedinUrl: 'https://linkedin.com/in/sam',
-          githubUrl: 'https://github.com/sam'
-        }
-      }
-    }
-  });
-
-  const user3 = await prisma.user.create({
-    data: {
+      bio: 'UI/UX Designer. Love animations.',
+      skills: 'Figma,Framer Motion,React,CSS',
+      currentRole: 'employee',
+      organization: 'Figma',
+      location: 'San Francisco, CA'
+    },
+    {
       email: 'alex@oneshopai.com',
       username: 'alexrivera',
       name: 'Alex Rivera',
-      profile: {
-        create: {
-          bio: 'Data Scientist passionate about LLMs and Retrieval-Augmented Generation.',
-          skills: mapSkills('Python,PyTorch,SQL,Machine Learning,NLP'),
-          currentRole: 'student',
-          organization: 'Stanford University',
-          location: 'Stanford, CA',
-          linkedinUrl: 'https://linkedin.com/in/alexrivera',
-          githubUrl: 'https://github.com/alexrivera'
-        }
-      }
-    }
-  });
-
-  const user4 = await prisma.user.create({
-    data: {
+      bio: 'Data Scientist passionate about LLMs.',
+      skills: 'Python,PyTorch,SQL,Machine Learning,NLP',
+      currentRole: 'student',
+      organization: 'Stanford University',
+      location: 'Stanford, CA'
+    },
+    {
       email: 'jordan@oneshopai.com',
       username: 'jordanlee',
       name: 'Jordan Lee',
-      profile: {
-        create: {
-          bio: 'Backend Engineer scaling distributed systems. Open-source contributor.',
-          skills: mapSkills('Go,Rust,Kubernetes,Docker,PostgreSQL'),
-          currentRole: 'employee',
-          organization: 'Stripe',
-          location: 'Seattle, WA',
-          linkedinUrl: 'https://linkedin.com/in/jordanlee',
-          githubUrl: 'https://github.com/jordanlee'
-        }
-      }
-    }
-  });
-
-  const user5 = await prisma.user.create({
-    data: {
-      email: 'casey@oneshopai.com',
-      username: 'caseysmith',
-      name: 'Casey Smith',
-      profile: {
-        create: {
-          bio: 'Growth Hacker and Product Manager. Bridging the gap between engineering and marketing.',
-          skills: mapSkills('Product Strategy,SEO,Data Analytics,Growth Marketing,Agile'),
-          currentRole: 'founder',
-          organization: 'GrowthLab AI',
-          location: 'Austin, TX',
-          linkedinUrl: 'https://linkedin.com/in/caseysmith',
-          githubUrl: 'https://github.com/caseysmith'
-        }
-      }
-    }
-  });
-
-  const user6 = await prisma.user.create({
-    data: {
+      bio: 'Backend Engineer scaling distributed systems.',
+      skills: 'Go,Rust,Kubernetes,Docker,PostgreSQL',
+      currentRole: 'employee',
+      organization: 'Stripe',
+      location: 'Seattle, WA'
+    },
+    {
       email: 'maya@oneshopai.com',
       username: 'mayachen',
       name: 'Maya Chen',
-      profile: {
-        create: {
-          bio: 'Mobile App Developer specialized in React Native and iOS Swift. Building cross-platform experiences.',
-          skills: mapSkills('React Native,Swift,Kotlin,TypeScript,GraphQL'),
-          currentRole: 'student',
-          organization: 'UC Berkeley',
-          location: 'Berkeley, CA',
-          linkedinUrl: 'https://linkedin.com/in/mayachen',
-          githubUrl: 'https://github.com/mayachen'
+      bio: 'Mobile App Developer.',
+      skills: 'React Native,Swift,Kotlin,TypeScript',
+      currentRole: 'student',
+      organization: 'UC Berkeley',
+      location: 'Berkeley, CA'
+    }
+  ];
+
+  const users = [];
+  for (const u of usersData) {
+    const user = await prisma.user.create({
+      data: {
+        email: u.email,
+        username: u.username,
+        name: u.name,
+        profile: {
+          create: {
+            bio: u.bio,
+            currentRole: u.currentRole,
+            organization: u.organization,
+            location: u.location,
+            skills: await mapSkills(u.skills)
+          }
         }
       }
-    }
-  });
+    });
+    users.push(user);
+  }
 
-  const user7 = await prisma.user.create({
-    data: {
-      email: 'liam@oneshopai.com',
-      username: 'liampatel',
-      name: 'Liam Patel',
-      profile: {
-        create: {
-          bio: 'Cybersecurity Analyst & DevSecOps advocate. Ensuring secure cloud infrastructure and zero-trust systems.',
-          skills: mapSkills('Security,AWS,Terraform,Docker,Python,Networking'),
-          currentRole: 'employee',
-          organization: 'Cloudflare',
-          location: 'London, UK',
-          linkedinUrl: 'https://linkedin.com/in/liampatel',
-          githubUrl: 'https://github.com/liampatel'
-        }
-      }
-    }
-  });
+  const [u1, u2, u3, u4, u5] = users;
 
-  const user8 = await prisma.user.create({
-    data: {
-      email: 'sophia@oneshopai.com',
-      username: 'sophiarodriguez',
-      name: 'Sophia Rodriguez',
-      profile: {
-        create: {
-          bio: '3D Artist and WebGL Creative Technologist. Bringing interactive graphics and 3D worlds to the browser.',
-          skills: mapSkills('Three.js,Blender,GLSL,React Three Fiber,Creative Coding'),
-          currentRole: 'founder',
-          organization: 'SpatialStudio',
-          location: 'New York, NY',
-          linkedinUrl: 'https://linkedin.com/in/sophiarodriguez',
-          githubUrl: 'https://github.com/sophiarodriguez'
-        }
-      }
-    }
-  });
-
-  const user9 = await prisma.user.create({
-    data: {
-      email: 'devika@oneshopai.com',
-      username: 'devikanair',
-      name: 'Devika Nair',
-      profile: {
-        create: {
-          bio: 'AI Product Specialist & Prompt Engineer. Designing intuitive human-in-the-loop workflows.',
-          skills: mapSkills('Prompt Engineering,LLMs,Product Strategy,Python,Evaluation'),
-          currentRole: 'student',
-          organization: 'IIT Delhi',
-          location: 'New Delhi, India',
-          linkedinUrl: 'https://linkedin.com/in/devikanair',
-          githubUrl: 'https://github.com/devikanair'
-        }
-      }
-    }
-  });
-
-  // Create Jobs
-  const jobs = [
+  console.log('Seeding opportunities...');
+  const jobsData = [
+    // Quick Apply (Real world fast track applications)
+    {
+      title: 'Frontend React Freelancer',
+      organization: 'Braintrust',
+      description: 'Looking for a frontend specialist to jump in and build a 5-page dashboard. Budget is pre-approved. Immediate start.',
+      skills: 'React,Tailwind CSS,API Integration',
+      location: 'Remote',
+      compensation: '$60 - $80 / hr',
+      type: 'Quick Apply'
+    },
+    {
+      title: 'Technical Writer (Contract)',
+      organization: 'Supabase',
+      description: 'Help us write clear, concise documentation for our new Vector database features. We review applications within 24 hours.',
+      skills: 'Technical Writing,PostgreSQL,Markdown',
+      location: 'Remote, Global',
+      compensation: '$50 / hr',
+      type: 'Quick Apply'
+    },
+    {
+      title: 'UI Design Contractor for Landing Page',
+      organization: 'Vercel',
+      description: 'We need a high-impact landing page design for our upcoming conference. Quick turnaround required.',
+      skills: 'Figma,Web Design,Branding',
+      location: 'Remote',
+      compensation: '$4,000 Flat',
+      type: 'Quick Apply'
+    },
+    // Full-Time
     {
       title: 'Senior Frontend Engineer',
       organization: 'OneShopAI',
-      description: 'We are looking for a Senior Frontend Engineer to lead the development of our core web platform. You will work heavily with React, TypeScript, and modern UI engineering.',
-      requirements: mapSkills('5+ years React,Deep understanding of web performance,Experience with TypeScript'),
+      description: 'Lead the development of our core web platform. Work heavily with React, TypeScript, and modern UI engineering.',
+      skills: 'React,Web Performance,TypeScript',
       location: 'Remote, India',
       compensation: '₹28,00,000 - ₹38,00,000 / yr',
-      type: 'full-time'
+      type: 'Full-Time'
     },
     {
       title: 'AI Systems Researcher (Generative AI)',
-      organization: 'OneShopAI Research',
-      description: 'Join our research lab to build the next generation of multimodal and generative agent architectures. Train large scale models and optimize agent reasoning pipelines.',
-      requirements: mapSkills('MS/PhD in Computer Science or equivalent,PyTorch & CUDA expertise,Large language model finetuning'),
-      location: 'Bangalore, India',
-      compensation: '₹35,00,000 - ₹50,00,000 / yr',
-      type: 'full-time'
+      organization: 'OpenAI',
+      description: 'Join the reasoning team to build the next generation of multimodal and generative agent architectures.',
+      skills: 'Computer Science,PyTorch,Large Language Models',
+      location: 'San Francisco, CA',
+      compensation: '$250,000 - $350,000 / yr',
+      type: 'Full-Time'
     },
     {
       title: 'Full Stack Product Engineer',
       organization: 'Stripe',
       description: 'Build financial tools that empower millions of internet businesses. Work with React, TypeScript, and distributed backend systems.',
-      requirements: mapSkills('3+ years experience with React and TypeScript,API design,High scalability mindset'),
+      skills: 'React,TypeScript,API Design,Distributed Systems',
       location: 'Remote, Global',
       compensation: '$140,000 - $175,000 / yr',
-      type: 'full-time'
+      type: 'Full-Time'
     },
     {
       title: 'Product Design Engineer',
       organization: 'Linear',
-      description: 'Help craft the next generation of modern project management software. You will design, prototype, and build production web interactions with obsession for craft and speed.',
-      requirements: mapSkills('Figma proficiency,Advanced CSS & Tailwind,React & TypeScript experience'),
+      description: 'Help craft modern project management software. Design, prototype, and build production web interactions with obsession for craft.',
+      skills: 'Figma,CSS,React,TypeScript',
       location: 'San Francisco, CA / Remote',
       compensation: '$150,000 - $185,000 / yr',
-      type: 'full-time'
-    },
-    {
-      title: 'Developer Advocate & Community Lead',
-      organization: 'Vercel',
-      description: 'Grow and support the global Next.js & React developer ecosystem. Create technical guides, build reference open source demos, and mentor developers.',
-      requirements: mapSkills('Strong technical writing skills,Public speaking,Deep knowledge of Next.js & web ecosystem'),
-      location: 'Remote',
-      compensation: '$120,000 - $150,000 / yr',
-      type: 'full-time'
+      type: 'Full-Time'
     },
     // Internships
     {
       title: 'AI Research & Reasoning Intern (Summer 2026)',
       organization: 'Google DeepMind',
-      description: 'Work alongside world-class scientists investigating agentic memory, test-time compute, and algorithmic reasoning benchmarks. Fully mentored program with publishable research projects.',
-      requirements: mapSkills('Pursuing BS/MS/PhD in CS/Math,PyTorch or JAX,Strong foundations in deep learning'),
+      description: 'Work alongside world-class scientists investigating agentic memory, test-time compute, and algorithmic reasoning benchmarks.',
+      skills: 'Machine Learning,PyTorch,Deep Learning',
       location: 'London, UK / New York, NY',
       compensation: '$58 / hr + Housing Stipend',
-      type: 'Internship'
+      type: 'Internships'
     },
     {
       title: 'Frontend Engineering Intern',
       organization: 'Figma',
-      description: 'Work on Figma web infrastructure, canvas rendering performance, or collaboration features. Collaborate closely with designers and senior engineers.',
-      requirements: mapSkills('Enrolled in undergraduate or graduate program,Strong JavaScript/TypeScript & WebGL/Canvas interest'),
+      description: 'Work on Figma web infrastructure, canvas rendering performance, or collaboration features.',
+      skills: 'JavaScript,TypeScript,WebGL,Canvas',
       location: 'San Francisco, CA (Hybrid)',
       compensation: '$52 / hr',
-      type: 'Internship'
+      type: 'Internships'
     },
     {
       title: 'Software Engineer Intern - Core Systems',
       organization: 'Anthropic',
-      description: 'Help develop reliable infrastructure powering frontier AI models. You will tackle distributed systems challenges, latency optimization, and developer tooling.',
-      requirements: mapSkills('Strong CS fundamentals,Proficiency in Python or Go/Rust,Curiosity for AI safety'),
+      description: 'Help develop reliable infrastructure powering frontier AI models. Tackle distributed systems challenges and latency optimization.',
+      skills: 'Python,Go,Rust,CS Fundamentals',
       location: 'San Francisco, CA',
       compensation: '$60 / hr + Benefits',
-      type: 'Internship'
+      type: 'Internships'
     },
     {
       title: 'Open Source Fellow & Intern',
       organization: 'Supabase',
-      description: 'Build backend SDKs, database integrations, and developer toolkits. Contribute directly to our open-source repositories with thousands of stars.',
-      requirements: mapSkills('Postgres knowledge,TypeScript & Node.js,Passion for open source'),
+      description: 'Build backend SDKs, database integrations, and developer toolkits. Contribute directly to our open-source repositories.',
+      skills: 'PostgreSQL,TypeScript,Node.js',
       location: 'Remote',
       compensation: '$40 / hr',
-      type: 'Internship'
+      type: 'Internships'
     },
     // Hackathons
     {
-      title: 'OneShopAI Global Agentic AI Hackathon 2026',
-      organization: 'OneShopAI Community',
-      description: 'Build the next generation of autonomous AI assistants, shopping agents, and workflow automations. Win $50,000 in cash prizes, cloud credits, and direct investor pitch sessions.',
-      requirements: mapSkills('Teams of 1-4,Must use AI agents or LLM APIs,Open source project submission'),
-      location: 'Virtual / Online',
+      title: 'AGI House Hackathon: Agents & Reasoning',
+      organization: 'AGI House',
+      description: 'Build the next generation of autonomous AI assistants and workflow automations. Direct investor pitch sessions for finalists.',
+      skills: 'AI Agents,LLM APIs,Open Source',
+      location: 'Hillsborough, CA',
       compensation: '$50,000 Prize Pool',
-      type: 'Hackathon'
+      type: 'Hackathons'
     },
     {
       title: 'HackMIT 2026 - Autonomous Web Sprint',
-      organization: 'MIT Tech Club',
-      description: '36-hour sprint where top builders worldwide come together to prototype intelligent systems, collaborative software, and creative tools.',
-      requirements: mapSkills('Open to college students & recent grads,All tech stacks welcome'),
-      location: 'Cambridge, MA (Travel Grants Available)',
-      compensation: '$30,000 Prizes + Sponsor Perks',
-      type: 'Hackathon'
+      organization: 'MIT',
+      description: '36-hour sprint where top builders worldwide come together to prototype intelligent systems and creative tools.',
+      skills: 'Prototyping,Full Stack Development',
+      location: 'Cambridge, MA',
+      compensation: '$30,000 Prizes',
+      type: 'Hackathons'
     },
     {
       title: 'Solana Global AI x Web3 Hackathon',
       organization: 'Solana Foundation',
-      description: 'Create high-throughput decentralized applications combining zero-knowledge proofs, AI compute verification, and micro-payments.',
-      requirements: mapSkills('Rust or TypeScript,Smart contract or AI integration'),
+      description: 'Create high-throughput decentralized applications combining zero-knowledge proofs and AI compute verification.',
+      skills: 'Rust,TypeScript,Smart Contracts,Web3',
       location: 'Virtual',
       compensation: '$100,000 Total Pool',
-      type: 'Hackathon'
+      type: 'Hackathons'
     },
     // Scholarships
     {
       title: 'Generation Google STEM Fellowship 2026',
       organization: 'Google',
-      description: 'Awarded to aspiring computer scientists demonstrating strong academic achievement, leadership, and passion for improving diversity and representation in technology.',
-      requirements: mapSkills('Currently enrolled in an undergraduate or graduate degree,Passion for CS'),
+      description: 'Awarded to aspiring computer scientists demonstrating strong academic achievement and passion for diversity in tech.',
+      skills: 'Undergraduate,Computer Science,Leadership',
       location: 'North America & APAC',
       compensation: '$10,000 Merit Grant',
-      type: 'Scholarship'
-    },
-    {
-      title: 'OneShopAI NextGen Tech Scholars Program',
-      organization: 'OneShopAI Foundation',
-      description: 'Providing tuition support, hardware grants, and 1-on-1 industry mentorship for student builders actively developing AI tools and community platforms.',
-      requirements: mapSkills('Enrolled student,Portfolio of at least 1 deployed project or open source PR'),
-      location: 'Global / Remote',
-      compensation: '₹2,50,000 Fellowship + Mentorship',
-      type: 'Scholarship'
+      type: 'Scholarships'
     },
     {
       title: 'Palantir Future Tech Builders Scholarship',
       organization: 'Palantir Technologies',
-      description: 'Supports visionary undergraduate students who are pushing boundaries in critical software systems, data engineering, and ethical AI applications.',
-      requirements: mapSkills('Sophomore or Junior in STEM,Essay submission & technical problem solving demo'),
+      description: 'Supports visionary undergraduate students who are pushing boundaries in critical software systems and ethical AI applications.',
+      skills: 'STEM major,Data Engineering,Software Systems',
       location: 'United States & Canada',
       compensation: '$7,000 Grant + Summer Fast-track',
-      type: 'Scholarship'
-    },
-    // Startup Programs
-    {
-      title: 'Y Combinator S26 Founder Batch',
-      organization: 'Y Combinator',
-      description: 'Twice a year, YC invests $500,000 in early-stage startups. Intensive 12-week batch with world-class partner mentorship, weekly dinners, and Demo Day.',
-      requirements: mapSkills('Technical co-founders,Early prototype or validated problem statement'),
-      location: 'San Francisco, CA',
-      compensation: '$500,000 Investment ($125k for 7% + $375k MFN)',
-      type: 'Startup Program'
-    },
-    {
-      title: 'AI Grant Accelerator - Batch 5',
-      organization: 'AI Grant (Nat Friedman & Daniel Gross)',
-      description: 'Early funding and compute grants for entrepreneurs building frontier AI products. Includes $250,000 SAFE, $350k Microsoft Azure credits, and partner perks.',
-      requirements: mapSkills('Working product demo,Novel applied AI architecture'),
-      location: 'San Francisco, CA / Remote',
-      compensation: '$250,000 + $350k GPU Credits',
-      type: 'Startup Program'
-    },
-    // Fellowships
-    {
-      title: 'Thiel Fellowship 2026',
-      organization: 'The Thiel Foundation',
-      description: 'A two-year, $100,000 grant for young people who want to build new things instead of sitting in a classroom. Mentorship from founders and investors.',
-      requirements: mapSkills('Age 22 or younger,Willing to pause or stop college to build full-time'),
-      location: 'Global / San Francisco, CA',
-      compensation: '$100,000 Non-dilutive Grant',
-      type: 'Fellowships'
-    },
-    {
-      title: 'Mozilla Tech & Society Fellowship',
-      organization: 'Mozilla Foundation',
-      description: 'Empowers technologists to embed with civil society organizations, auditing algorithmic bias, open data ecosystems, and digital rights tools.',
-      requirements: mapSkills('3+ years software or data experience,Focus on open web and ethical tech'),
-      location: 'Remote (Global)',
-      compensation: '$80,000 Stipend + Health Allowance',
-      type: 'Fellowships'
+      type: 'Scholarships'
     }
   ];
 
-  for (const job of jobs) {
-    await prisma.job.create({ data: job });
+  for (const job of jobsData) {
+    await prisma.job.create({
+      data: {
+        title: job.title,
+        organization: job.organization,
+        description: job.description,
+        location: job.location,
+        compensation: job.compensation,
+        type: job.type,
+        requirements: await mapSkills(job.skills)
+      }
+    });
   }
 
-  // Create Collab Requests
-  await prisma.collabRequest.create({
-    data: {
-      title: 'AI Image Generator Frontend',
-      description: 'Need a solid frontend engineer to help me build out a Next.js interface for my Stable Diffusion backend.',
-      requiredSkills: mapSkills('Next.js,Tailwind,API Integration'),
-      category: 'Working Together',
-      creatorId: user1.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
-      title: 'Hackathon Partner: AI Agents',
-      description: 'Looking for a backend engineer and a designer to join me for the upcoming AI Agents hackathon this weekend!',
-      requiredSkills: mapSkills('Node.js,Python,Figma'),
-      category: 'Post a Need',
-      creatorId: user2.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
-      title: 'What is Collab Space?',
-      description: 'A beginner\'s guide on how to utilize Collab Space to find the perfect team for your next big idea.',
-      requiredSkills: mapSkills('Community,Guides'),
-      category: 'How Collab Works',
-      creatorId: user1.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
-      title: 'Need UI/UX for E-commerce MVP',
-      description: 'Looking for a designer to create wireframes and high fidelity designs for a new AI e-commerce platform.',
-      requiredSkills: mapSkills('Figma,UI/UX'),
-      category: 'Post a Need',
-      creatorId: user1.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
-      title: 'Weekly Standup for Solo Founders',
-      description: 'A channel for solo founders to share updates, blockages and collaborate on overcoming hurdles.',
-      requiredSkills: mapSkills('Founder,Motivation'),
-      category: 'Working Together',
-      creatorId: user2.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
-      title: 'How to Find the Right Teammate',
-      description: 'Best practices on matching skills, setting expectations, and kicking off project sprints smoothly.',
-      requiredSkills: mapSkills('Team Building,Collaboration,Communication'),
-      category: 'How Collab Works',
-      creatorId: user6.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
-      title: 'Mobile Dev for Fitness Tracking App',
-      description: 'Looking for a React Native or Flutter engineer to build an offline-first fitness and calorie tracking app.',
-      requiredSkills: mapSkills('React Native,Flutter,Mobile,Firebase'),
-      category: 'Post a Need',
-      creatorId: user7.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
+  console.log('Seeding Collab Space projects...');
+  const collabs = [
+    {
+      title: 'Open Source AI Code Editor (Cursor Alternative)',
+      description: 'Building an open-source, extensible code editor with deep AI integration using Rust and React. Looking for contributors passionate about developer tooling.',
+      category: 'Open Source',
+      projectType: 'Open Source',
+      duration: '3-6 months',
+      openRoles: 'Rust Developer, UI Designer',
+      skills: 'Rust,React,TypeScript,Figma',
+      creatorId: u4.id
+    },
+    {
+      title: 'Local Farmers Market Connector App',
+      description: 'A React Native mobile application to connect local farmers directly with consumers. Features inventory management and map integration.',
+      category: 'Social Impact',
+      projectType: 'Side Project',
+      duration: '1-3 months',
+      openRoles: 'React Native Dev, Backend (Node.js)',
+      skills: 'React Native,Node.js,PostgreSQL',
+      creatorId: u5.id
+    },
+    {
+      title: 'Next.js & Tailwind High-End UI Library',
+      description: 'Creating a beautiful, accessible UI component library for Next.js. The goal is to provide a premium alternative to existing open-source libraries like shadcn/ui.',
+      category: 'Design Engineering',
+      projectType: 'Open Source',
+      duration: 'Ongoing',
+      openRoles: 'Frontend Developer, Accessibility Expert',
+      skills: 'Next.js,Tailwind CSS,Storybook,Framer Motion',
+      creatorId: u2.id
+    },
+    {
+      title: 'Fintech Dashboard SaaS MVP',
+      description: 'A high-performance dashboard template for financial applications. Needs complex charts, real-time data integration, and a polished dark mode design.',
+      category: 'Fintech',
+      projectType: 'Startup MVP',
+      duration: '3-6 months',
+      openRoles: 'Data Viz Engineer (D3/Recharts), UI Developer',
+      skills: 'React,D3.js,Tailwind CSS',
+      creatorId: u1.id
+    },
+    {
+      title: 'AI Audio Transcription & Summary App',
+      description: 'A desktop application that uses local LLMs (Llama 3) to transcribe and summarize audio recordings with complete privacy. Built with Electron.',
+      category: 'AI/ML',
+      projectType: 'Startup MVP',
+      duration: '1-3 months',
+      openRoles: 'Python Dev (AI), Electron Developer',
+      skills: 'Python,Electron,PyTorch,React',
+      creatorId: u3.id
+    },
+    {
+      title: 'Hackathon Partner: AI Agentic Shopping',
+      description: 'Looking for a backend engineer and a designer to join me for the upcoming AI Agents hackathon this weekend! Building an autonomous shopping bot.',
+      category: 'Hackathon',
+      projectType: 'Hackathon',
+      duration: '1-2 weeks',
+      openRoles: 'Backend Node Dev, Figma UI Designer',
+      skills: 'Node.js,Python,Figma',
+      creatorId: u1.id
+    },
+    {
       title: 'Open Source LLM Benchmarking Suite',
-      description: 'Collaborating on open-source evaluation harnesses for local small language models on edge devices.',
-      requiredSkills: mapSkills('Python,PyTorch,HuggingFace,Benchmarking'),
-      category: 'Working Together',
-      creatorId: user8.id
-    }
-  });
-
-  await prisma.collabRequest.create({
-    data: {
+      description: 'Collaborating on open-source evaluation harnesses for local small language models on edge devices (mobile/laptops).',
+      category: 'AI Research',
+      projectType: 'Research',
+      duration: 'Ongoing',
+      openRoles: 'ML Engineer, Data Scientist',
+      skills: 'Python,PyTorch,HuggingFace,Benchmarking',
+      creatorId: u3.id
+    },
+    {
       title: 'Creative 3D Portfolio Collaboration',
-      description: 'Teaming up to design an immersive 3D interactive portfolio experience using Three.js and WebGL.',
-      requiredSkills: mapSkills('Three.js,GLSL,React,Creative Coding'),
-      category: 'Working Together',
-      creatorId: user9.id
+      description: 'Teaming up to design an immersive 3D interactive portfolio experience using Three.js and WebGL. Need a technical artist.',
+      category: 'Creative Tech',
+      projectType: 'Side Project',
+      duration: '1 month',
+      openRoles: 'Three.js Developer, 3D Modeler',
+      skills: 'Three.js,GLSL,React,Creative Coding,Blender',
+      creatorId: u2.id
+    },
+    {
+      title: 'Solana Web3 Smart Contract Auditor Needed',
+      description: 'We are building a decentralized AI compute marketplace. We need a Rust developer with Solana smart contract experience for an upcoming sprint.',
+      category: 'Web3 / Crypto',
+      projectType: 'Startup MVP',
+      duration: '3+ months',
+      openRoles: 'Rust Developer, Smart Contract Auditor',
+      skills: 'Rust,Solana,Web3,Cryptography',
+      creatorId: u4.id
+    },
+    {
+      title: 'Algorithmic Trading Bot for Crypto',
+      description: 'Building a low-latency trading bot integrating with Binance and Bybit APIs using Go. Looking for someone with quant trading experience.',
+      category: 'Finance',
+      projectType: 'Side Project',
+      duration: '3-6 months',
+      openRoles: 'Go Developer, Quant Analyst',
+      skills: 'Go,Data Science,Finance,APIs',
+      creatorId: u4.id
+    },
+    {
+      title: 'Student Productivity Chrome Extension',
+      description: 'A lightweight Chrome extension that blocks distracting sites and uses AI to summarize long PDFs. Perfect project for a student developer.',
+      category: 'Productivity',
+      projectType: 'Side Project',
+      duration: '1-2 weeks',
+      openRoles: 'JavaScript Developer',
+      skills: 'JavaScript,Chrome Extension API,HTML/CSS',
+      creatorId: u5.id
     }
-  });
+  ];
 
-  console.log('Seeding complete.');
+  for (const proj of collabs) {
+    await prisma.collabRequest.create({
+      data: {
+        creatorId: proj.creatorId,
+        title: proj.title,
+        description: proj.description,
+        category: proj.category,
+        projectType: proj.projectType,
+        duration: proj.duration,
+        openRoles: proj.openRoles,
+        status: 'open',
+        requiredSkills: await mapSkills(proj.skills)
+      }
+    });
+  }
+
+  console.log('Seeding complete!');
 }
 
 main()
