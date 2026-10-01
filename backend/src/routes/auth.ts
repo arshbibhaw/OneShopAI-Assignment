@@ -23,7 +23,7 @@ const registerSchema = z.object({
     password: z.string().min(6),
     name: z.string().optional(),
     avatar: z.string().url().optional(),
-    username: z.string().optional()
+    username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/)
   })
 });
 
@@ -37,24 +37,11 @@ router.post('/register', validateRequest(registerSchema), async (req: Request, r
       return;
     }
 
-    // Determine and sanitize username
-    let finalUsername = username ? username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') : '';
-    if (finalUsername) {
-      const existingUsername = await prisma.user.findUnique({ where: { username: finalUsername } });
-      if (existingUsername) {
-        res.status(400).json({ error: 'Username is already taken' });
-        return;
-      }
-    } else {
-      // Auto-generate from name or email prefix
-      const base = (name || email.split('@')[0]).trim().toLowerCase().replace(/[^a-z0-9_]/g, '') || 'user';
-      let candidate = base;
-      let counter = 1;
-      while (await prisma.user.findUnique({ where: { username: candidate } })) {
-        candidate = `${base}${counter}`;
-        counter++;
-      }
-      finalUsername = candidate;
+    const finalUsername = username.trim().toLowerCase();
+    const existingUsername = await prisma.user.findUnique({ where: { username: finalUsername } });
+    if (existingUsername) {
+      res.status(400).json({ error: 'Username is already taken' });
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

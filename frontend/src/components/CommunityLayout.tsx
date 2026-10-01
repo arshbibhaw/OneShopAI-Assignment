@@ -25,9 +25,13 @@ import {
   Bookmark,
   Newspaper,
   MessageSquareText,
-  Edit
+  Edit,
+  Settings,
+  HelpCircle,
+  LogOut
 } from 'lucide-react';
 import mainLogo from '../assets/mainLogo-F6715TUU-F6715TUU.png';
+import { useAuth } from '../context/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -39,6 +43,9 @@ export default function CommunityLayout({ children }: LayoutProps) {
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col text-slate-900">
@@ -277,8 +284,42 @@ export default function CommunityLayout({ children }: LayoutProps) {
             )}
           </div>
 
-          <div className="w-9 h-9 rounded-full bg-[#7828F0] text-white flex items-center justify-center text-[14px] font-bold cursor-pointer shadow-sm hover:shadow-md transition-shadow ml-1">
-            AB
+          <div 
+            className="relative flex items-center justify-center py-2 ml-1"
+            onMouseEnter={() => { setProfileMenuOpen(true); setNotificationsOpen(false); setMessagesOpen(false); setCreateMenuOpen(false); }}
+            onMouseLeave={() => setProfileMenuOpen(false)}
+          >
+            <div className="w-9 h-9 rounded-full bg-[#7828F0] text-white flex items-center justify-center text-[14px] font-bold cursor-pointer shadow-sm hover:shadow-md transition-shadow">
+              {user ? (user.name.charAt(0) + (user.name.split(' ')[1]?.[0] || '')).toUpperCase() : 'U'}
+            </div>
+            
+            {profileMenuOpen && (
+              <div className="absolute top-full right-0 mt-1 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-4 p-2">
+                <div className="flex flex-col gap-1 text-[15px] font-medium text-slate-700">
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full text-left">
+                    <Settings size={18} className="text-slate-500" />
+                    Preferences
+                  </button>
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full text-left">
+                    <HelpCircle size={18} className="text-slate-500" />
+                    Help
+                  </button>
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors w-full text-left">
+                    <MessageSquareText size={18} className="text-slate-500" />
+                    Send feedback
+                  </button>
+                </div>
+                <div className="border-t border-slate-100 mt-1 pt-1">
+                  <button 
+                    onClick={logout}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors w-full text-left font-medium"
+                  >
+                    <LogOut size={18} />
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -293,10 +334,10 @@ export default function CommunityLayout({ children }: LayoutProps) {
           {/* User Profile Block */}
           <div className="shrink-0 mx-4 mb-3 p-3.5 rounded-2xl flex items-center gap-3 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer group">
             <div className="w-12 h-12 rounded-full bg-[#7828F0] text-white flex items-center justify-center font-bold text-[19px] shadow-sm shrink-0">
-              AB
+              {user ? (user.name.charAt(0) + (user.name.split(' ')[1]?.[0] || '')).toUpperCase() : 'U'}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-[15px] text-slate-900 leading-tight truncate">Aakarsh Bibhaw</span>
+              <span className="font-bold text-[15px] text-slate-900 leading-tight truncate">{user ? user.name : 'User'}</span>
               <span className="text-[13px] font-semibold text-[#7828F0] mt-0.5 group-hover:underline">View profile</span>
             </div>
           </div>

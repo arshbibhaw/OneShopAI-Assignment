@@ -27,7 +27,7 @@ export default function Jobs() {
   const [error, setError] = useState<string | null>(null);
 
   // Interactive state
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [applications, setApplications] = useState<Record<string, string>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -159,8 +159,10 @@ export default function Jobs() {
   };
 
   const fetchApplications = () => {
-    if (!user) return;
-    fetch(`http://localhost:4000/api/jobs/applications/user/${user.id}`)
+    if (!user || !token) return;
+    fetch(`http://localhost:4000/api/jobs/applications/user/${user.id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -199,7 +201,10 @@ export default function Jobs() {
     
     fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ userId: user.id })
     })
       .then(res => res.json())
@@ -221,7 +226,10 @@ export default function Jobs() {
     
     fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ userId: user.id })
     })
       .then(res => res.json())
