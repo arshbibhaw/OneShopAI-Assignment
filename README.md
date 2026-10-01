@@ -1,98 +1,53 @@
 # OneShopAI Platform: Community & Opportunity Ecosystem
 
-A full-stack collaborative platform featuring the Opportunity Hub and Collab Space. Built with a decoupled client-server architecture, clean light-themed user interfaces, role-adaptive builder profiles, and complete application and collaboration lifecycles.
+A full-stack collaborative platform built to connect talent with opportunities and foster community-driven projects. OneShopAI features a decoupled client-server architecture, modern light-themed user interfaces, role-adaptive builder profiles, and complete end-to-end lifecycles for job applications and team collaborations.
 
 ---
 
-## The Design Philosophy
+## The User Journey & Landing Experience
 
-### Why a minimal, structured approach?
-- **What was changed:** The landing experience and platform interface were crafted with a structured, document-style layout in a clean light theme.
-- **Why:** First impressions matter. Instead of overwhelming the user with heavy animations or unnecessary visual clutter, the interface is focused on clean information hierarchy and purpose. A minimal, distraction-free layout signals professionalism and respect for the reader's time, letting the product and its reasoning speak for themselves.
-- **Expected impact:** Evaluators and members can immediately understand the platform and navigate without cognitive overload.
+### 1. The Entry Point
+When a user arrives at the platform, the primary goal is clarity. The landing experience is crafted as a structured, document-style layout that explains the platform's core value proposition immediately. Instead of overwhelming the visitor with heavy animations, the interface focuses on clean information hierarchy, signaling professionalism and respecting the user's time.
+
+### 2. Authentication
+To participate in the ecosystem, users proceed through a unified authentication gateway. The auth flow is minimalist, supporting both login and registration. Upon registration, a base profile is automatically generated, and the user receives a secure JWT token that manages their session across the entire platform.
+
+### 3. The Portal: Choosing a Path
+Once authenticated, the user reaches the main portal, which bifurcates the platform into two distinct hubs based on their current intent:
+- **Opportunity Hub:** For candidates actively seeking internships, full-time roles, scholarships, or hackathons.
+- **Collab Space:** For builders, founders, and students looking to network, launch side projects, or join open-source initiatives.
 
 ---
 
-## Detailed Walkthrough of Product Improvements
+## Core Modules
 
 ### Part 1: Opportunity Hub
 
-All assignment requirements for the Opportunity Hub were implemented, alongside five high-impact improvements built on top:
+The Opportunity Hub is designed for fast, high-intent opportunity discovery and application management.
 
-1. **Quick Apply Category**
-   - **What was changed:** Added a dedicated Quick Apply category for opportunities that can be acted upon immediately.
-   - **Why:** Not every visitor arrives prepared to read extensive job descriptions. Providing a direct entry point lets high-intent, fast-moving candidates submit applications quickly.
-   - **Expected impact:** Increased application conversion from visitors who might otherwise browse and drop off.
-
-2. **Separate View and Apply Steps**
-   - **What was changed:** Viewing an opportunity and applying for it are decoupled into two distinct steps. The view page provides an editorial summary, while the apply workflow opens only when the candidate chooses to proceed.
-   - **Why:** Summaries help candidates assess fit quickly. Keeping application submission intentional prevents low-intent, accidental applications, benefiting both applicants and hiring teams.
-   - **Expected impact:** Higher application completion rates and improved candidate intent.
-
-3. **Curated Upfront Listings with Progressive Disclosure**
-   - **What was changed:** The feed initially presents a curated set of popular listings, paired with a smooth View More expansion.
-   - **Why:** Unbroken infinite lists cause decision paralysis and reduce page performance. Displaying the strongest listings first respects user attention while preserving deep exploration.
-   - **Expected impact:** Faster scanning and higher engagement with top-tier opportunities.
-
-4. **Fixed Horizontal Scrolling in Category Navigation**
-   - **What was changed:** Restored smooth, touch-friendly horizontal scrolling across opportunity categories.
-   - **Why:** Category filters are primary navigation paths. When categories truncate or fail to scroll properly, users miss relevant opportunities on laptops and mobile devices.
-   - **Expected impact:** Higher category discovery rates across all viewport sizes.
-
-5. **Distinct Active State in the Navigation Sidebar**
-   - **What was changed:** Upgraded the sidebar with high-contrast, recognizable active indicators.
-   - **Why:** Clear wayfinding prevents disorientation and helps users navigate between platform areas with confidence.
-   - **Expected impact:** Reduced navigation reversals and faster time to target screens.
-
----
+- **Quick Apply & Categorization:** Opportunities are categorized clearly (e.g., Quick Apply, Internships, Full-Time). "Quick Apply" targets high-intent users looking for immediate action.
+- **Progressive Disclosure:** To prevent decision paralysis, the feed initially presents a curated set of top listings. Users can expand the list via a smooth "View More" interaction, preserving performance and attention.
+- **Decoupled View & Apply:** Viewing an opportunity and applying are distinct steps. The detail page offers an editorial-style summary of the role, requirements, and compensation. The application workflow is intentional, reducing accidental submissions.
+- **Application Lifecycle:** Users can track their applications (Pending, Accepted, Rejected) in real-time and have the autonomy to withdraw an application with a single click.
 
 ### Part 2: Collab Space
 
-Collab Space was architected around a unified workflow: moving from discovery to joining to managing, without dead ends.
+Collab Space is architected to seamlessly move users from discovery to active collaboration.
 
-1. **Discover Channels, Builder Directory, and My Collabs**
-   - **What was built:** Three distinct sections:
-     - **Discover Channels:** Explore community projects, startup MVPs, hackathons, and open source initiatives.
-     - **Builder Directory:** Search and connect directly with fellow builders through verified profile credentials.
-     - **My Collabs:** A personal workspace tracking active projects and outgoing requests.
-   - **Why:** Each section addresses a specific question: where can I contribute, who can I build with, and what am I currently working on.
-   - **Expected impact:** Reduced friction in finding collaborators and initiating joint projects.
-
-2. **Project Creation and Activity Dashboard**
-   - **What was built:** Builders can launch collaboration requests and view their engagement metrics (Projects Created and Projects Joined) right from their profile bar.
-   - **Why:** Visible progress builds ownership and encourages ongoing engagement within the community.
-   - **Expected impact:** Higher project creation velocity and repeat member visits.
-
-3. **Collaborative Request Management**
-   - **What was built:** Applicants receive real-time visibility into their application status (Pending, Accepted, Rejected), while project owners manage incoming member requests with single-click decisions.
-   - **Why:** Waiting indefinitely without feedback causes applicants to disengage. Transparent status queues keep both sides informed.
-   - **Expected impact:** Faster turnaround times for project requests and fewer abandoned invitations.
-
-4. **Self-Serve Project and Membership Management**
-   - **What was built:** Pending applicants can withdraw their requests at any time. Active members can leave a project whenever needed, with backend records and UI state updating immediately.
-   - **Why:** Reversible commitments lower the barrier to entry, giving users full autonomy over their collaborative engagements.
-   - **Expected impact:** Higher willingness to apply to projects, knowing decisions can be revised.
+- **Discover Channels:** A marketplace for community projects, startup MVPs, and hackathons. Users can browse active initiatives and request to join them.
+- **Builder Directory:** A searchable grid of community peers. Users can view verified profiles, skills, and affiliations to find the right co-founders or team members.
+- **Role-Adaptive Profiles:** Builders can customize their profiles based on their current role (Student, Employee, or Founder). The interface dynamically adjusts required fields (e.g., University vs. Company) to capture relevant context.
+- **My Collabs Dashboard:** A personalized workspace where users can track projects they have created and projects they have joined. Project owners can manage incoming requests, accepting or rejecting applicants with real-time UI updates.
 
 ---
 
-## System Architecture and Features
+## Technical Decisions
 
-### 1. Opportunity Hub
-- **Dynamic Search and Filtering:** Filter by keyword, category (Quick Apply, Internships, Full-Time, Scholarships, Hackathons), and sorting criteria (Popular, Deadline).
-- **Opportunity Details Page:** Clean editorial layout presenting company overview, eligibility requirements, compensation details, application links, and related listings.
-- **Application Lifecycle:** Instant submission with resume/profile linkage, status badges (Pending, Accepted, Rejected), and one-click application withdrawal.
-- **Opportunity Creation:** Modal dialog for organizations and recruiters to publish new listings with Zod validation.
-
-### 2. Collab Space
-- **Interactive Builder Profile:** Top bar featuring user avatar, unique `@username`, professional role, university or organization affiliation, bio, skill tags, and social shortcuts (Email, LinkedIn, X, GitHub).
-- **Role-Adaptive Profile Editing:** Dynamically switches form fields based on whether the member is a Student (College/Major) or an Employee/Founder (Company/Organization).
-- **Discover Channels Grid:** 3-column responsive layout showcasing active channels with project type tags (*Side Project, Startup MVP, Hackathon, Open Source, Research*), duration estimates, and live member counts.
-- **Builder Directory:** Grid of community peers with direct contact buttons and tag-based filtering.
-- **Collaboration Creation Modal:** Project submission with category, type, duration, required skills, and banner styling.
-
-### 3. Unified Authentication System
-- **Dual Platform Support:** Shared JWT authentication across both Opportunity Hub and Collab Space.
-- **Clean Auth Interface:** Light-themed login and registration with automated profile creation and credential validation.
+1. **Decoupled Architecture:** Separating the React frontend from the Express backend allows for independent scaling, deployment, and distinct technology choices (e.g., Vercel for static edge delivery and Render for Node.js API hosting).
+2. **Stateless Authentication (JWT):** By using JSON Web Tokens instead of server-side sessions, the API remains stateless. This removes the need for database lookups on every request, significantly improving API latency and scalability.
+3. **Database Portability:** Prisma ORM was selected because it allows seamless switching between a local SQLite database (for fast, zero-config development) and a production PostgreSQL database (Supabase) without changing a single line of business logic.
+4. **Zod Validation & TypeScript:** Strict end-to-end type safety is maintained by using TypeScript interfaces on the frontend and Zod validation schemas on the backend. This prevents malformed data from reaching the database.
+5. **UI/UX Simplicity:** Custom Tailwind CSS configuration was favored over heavy component libraries to maintain a lightweight bundle size and exact control over the platform's minimalist, light-themed aesthetic.
 
 ---
 
@@ -102,75 +57,57 @@ Collab Space was architected around a unified workflow: moving from discovery to
 - **Framework:** React 19 with Vite
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS v4 with custom design tokens
-- **Icons & UI Primitives:** Lucide React, Radix UI primitives
-- **Routing & State:** React Router DOM v7, React Context API (`AuthContext`)
+- **Icons & UI Primitives:** Lucide React, Radix UI
+- **Routing & State:** React Router DOM v7, React Context API
 
 ### Backend
 - **Runtime:** Node.js
-- **Framework:** Express.js with TypeScript (`tsx` engine)
-- **Database & ORM:** Prisma ORM with SQLite (zero-configuration local setup, directly compatible with PostgreSQL)
-- **Validation:** Zod schemas for all inbound request bodies
-- **Security:** JSON Web Tokens (JWT), bcrypt password hashing, IDOR authorization checks, and centralized error handling
+- **Framework:** Express.js with TypeScript
+- **Database & ORM:** Prisma ORM with PostgreSQL (Supabase) / SQLite (Local)
+- **Validation:** Zod schemas for strict request validation
+- **Security:** JSON Web Tokens (JWT) for stateless authentication, bcrypt for secure password hashing
 
 ---
 
 ## Repository Structure
 
-```
+```text
 OneShopAI_Assignment/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma      # Prisma schema (User, Profile, Job, Application, CollabRequest, CollabMember)
-│   │   └── dev.db             # Local SQLite database
+│   │   └── schema.prisma      # Database schema definitions
 │   ├── src/
-│   │   ├── routes/
-│   │   │   ├── auth.ts        # Authentication and profile endpoints
-│   │   │   ├── collab.ts      # Collab requests, membership, and builder directory
-│   │   │   └── jobs.ts        # Jobs, applications, and withdrawal endpoints
-│   │   ├── index.ts           # Express server bootstrap
-│   │   └── seed.ts            # Database seed script
+│   │   ├── routes/            # API Route handlers (auth, jobs, collab)
+│   │   ├── index.ts           # Express application bootstrap
+│   │   └── seed.ts            # Database seeding utility
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/        # Layouts, navigation, cards, and modals
-│   │   ├── context/           # AuthContext (user state, tokens, persistence)
-│   │   ├── pages/
-│   │   │   ├── LandingPage.tsx # Minimalist walkthrough and product rationale
-│   │   │   ├── AuthPage.tsx    # Light-themed login and register page
-│   │   │   ├── Jobs.tsx        # Opportunity Hub
-│   │   │   ├── JobDetails.tsx  # Opportunity detailed editorial view
-│   │   │   └── CollabSpace.tsx # Collab Space module (Discover, Directory, My Collabs)
-│   │   ├── App.tsx            # Main router configuration
-│   │   └── index.css          # Core design tokens and Tailwind configuration
+│   │   ├── components/        # Reusable UI components
+│   │   ├── config/            # Environment configurations (api.ts)
+│   │   ├── context/           # AuthContext for global state
+│   │   ├── pages/             # Route components (Auth, Jobs, CollabSpace)
+│   │   ├── App.tsx            # Application router
+│   │   └── index.css          # Tailwind and global styles
+│   ├── vercel.json            # Vercel deployment configuration
 │   └── package.json
-├── ARCHITECTURE.md            # Entity relationships, data flows, and API design
-├── DESIGN.md                  # Design system specifications and tokens
-└── README.md                  # Project overview and setup instructions
+├── ARCHITECTURE.md            # System architecture and deployment guide
+└── README.md                  # Project documentation
 ```
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-- Node.js (v18 or higher recommended)
-- npm or pnpm
-
 ### 1. Backend Setup
 
 ```bash
-# Navigate to the backend directory
 cd backend
-
-# Install dependencies
 npm install
-
-# Generate Prisma client and push schema to SQLite
+# Push schema to local SQLite for development
 npx prisma db push
-
-# Seed initial data (Opportunities, Builders, Channels)
+# Seed the database with sample data
 npx tsx src/seed.ts
-
 # Start the backend server (runs on http://localhost:4000)
 npm run dev
 ```
@@ -178,17 +115,13 @@ npm run dev
 ### 2. Frontend Setup
 
 ```bash
-# In a new terminal window, navigate to the frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the Vite development server (runs on http://localhost:5173)
+# Start the Vite development server
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser. A seeded demo account is pre-authenticated for immediate testing, or you can register a new account on the authentication page.
+Open `http://localhost:5173` in your browser to explore the platform.
 
 ---
 
@@ -196,25 +129,17 @@ Open `http://localhost:5173` in your browser. A seeded demo account is pre-authe
 
 | Endpoint | Method | Description | Protected |
 | :--- | :--- | :--- | :--- |
-| `/api/auth/register` | `POST` | Register a new user with unique username and profile | No |
-| `/api/auth/login` | `POST` | Authenticate user via email or username | No |
-| `/api/auth/me` | `GET` | Fetch authenticated user data and profile | Yes |
-| `/api/collab/profile` | `PUT` | Update profile information, role, skills, and links | Yes |
-| `/api/collab/profiles` | `GET` | Retrieve the builder directory list | No |
-| `/api/collab/requests` | `GET` | List all open collaboration projects | No |
-| `/api/collab/requests` | `POST` | Create a new project collaboration listing | Yes |
-| `/api/collab/requests/:id/join` | `POST` | Request to join a collaboration channel | Yes |
-| `/api/collab/requests/:id/leave` | `POST` | Leave an active channel or withdraw request | Yes |
-| `/api/jobs` | `GET` | Retrieve opportunities with search and filtering | No |
-| `/api/jobs` | `POST` | Create a new opportunity listing | Yes |
-| `/api/jobs/:id` | `GET` | Fetch full details for a single opportunity | No |
+| `/api/auth/register` | `POST` | Register a new user | No |
+| `/api/auth/login` | `POST` | Authenticate user and receive JWT | No |
+| `/api/auth/me` | `GET` | Fetch authenticated user data | Yes |
+| `/api/collab/profile` | `PUT` | Update user profile and skills | Yes |
+| `/api/collab/profiles` | `GET` | Retrieve the builder directory | No |
+| `/api/collab/requests` | `GET` | List all collaboration projects | No |
+| `/api/collab/requests` | `POST` | Create a new project | Yes |
+| `/api/collab/requests/:id/join` | `POST` | Request to join a project | Yes |
+| `/api/jobs` | `GET` | Retrieve opportunities | No |
+| `/api/jobs` | `POST` | Create a new opportunity | Yes |
 | `/api/jobs/:id/apply` | `POST` | Apply for an opportunity | Yes |
-| `/api/jobs/:id/apply` | `DELETE` | Withdraw an active application | Yes |
-| `/api/jobs/applications/user/:userId` | `GET` | Retrieve all applications submitted by a user | Yes |
+| `/api/jobs/applications/user/:id`| `GET` | Get user's applications | Yes |
 
----
-
-## Design and System Architecture Documentation
-
-- For detailed database relationships, entity models, and sequence diagrams, refer to [ARCHITECTURE.md](./ARCHITECTURE.md).
-- For design system tokens, typography scales, and component specifications, refer to [DESIGN.md](./DESIGN.md).
+For architectural details and deployment strategies, refer to [ARCHITECTURE.md](./ARCHITECTURE.md).
