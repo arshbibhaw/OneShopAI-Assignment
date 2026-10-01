@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  username      String?         @unique
+  password      String?
+  name          String?
+  avatar        String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  profile       Profile?
+  applications  Application[]
+  collabMembers CollabMember[]
+  collabRequests CollabRequest[] @relation("CreatedRequests")
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  bio          String?
+  skills       String   // comma separated
+  portfolio    String?
+  linkedinUrl  String?
+  githubUrl    String?
+  location     String?
+  currentRole  String?  // 'student' | 'employee' | 'founder'
+  organization String?  // College if student, Company if employee/founder
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id           String        @id @default(uuid())
+  title        String
+  organization String?
+  description  String
+  requirements String        // comma separated
+  location     String?
+  compensation String?
+  type         String        @default("Full-Time")
+  status       String        @default("open")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  applications Application[]
+}
+
+model Application {
+  id         String   @id @default(uuid())
+  jobId      String
+  userId     String
+  status     String   @default("pending")
+  resumeLink String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CollabRequest {
+  id             String   @id @default(uuid())
+  creatorId      String
+  title          String
+  description    String
+  requiredSkills String   // comma separated
+  category       String?
+  coverImage     String?
+  projectType    String?  @default("Side Project")
+  duration       String?  @default("Unspecified")
+  status         String   @default("open")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  creator CollabMember[]
+  owner   User @relation("CreatedRequests", fields: [creatorId], references: [id], onDelete: Cascade)
+}
+
+model CollabMember {
+  id              String   @id @default(uuid())
+  collabRequestId String
+  userId          String
+  status          String   @default("pending") // pending, accepted, rejected
+  joinedAt        DateTime @default(now())
+  
+  request CollabRequest @relation(fields: [collabRequestId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

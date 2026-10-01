@@ -1,0 +1,52 @@
+# Dependency directories
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Scratch files
+temp_css.css
+temp_vars.txt
+vars.txt
+fetch_opps.js
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Build output
+dist
+frontend/dist
+backend/dist
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/prisma/*.db
+
+# Editor directories and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
+
+# AI and Editor Tooling
+.agents/
+.cursor/
+.claude/
+.devin/
+**/.agents/
+**/.cursor/
+**/.claude/
+**/.devin/
