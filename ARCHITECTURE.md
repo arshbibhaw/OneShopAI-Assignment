@@ -10,7 +10,7 @@ OneShopAI follows a decoupled client-server architecture. This separation of con
 
 ```mermaid
 graph TD
-    subgraph Client Layer [Frontend - React SPA]
+    subgraph ClientLayer [Frontend - React SPA]
         Vite[Vite Bundler]
         ReactApp[React 19 Application]
         Router[React Router DOM]
@@ -23,7 +23,7 @@ graph TD
         ReactApp --> UI
     end
 
-    subgraph Network Layer [API Gateway]
+    subgraph NetworkLayer [API Gateway]
         Express[Express.js REST API]
         CORS[CORS Middleware]
         JWT[JWT Authentication Guard]
@@ -32,7 +32,7 @@ graph TD
         Express --> JWT
     end
 
-    subgraph Business Logic Layer [Backend Services]
+    subgraph BusinessLogicLayer [Backend Services]
         AuthService[Auth & Profile Module]
         JobService[Jobs & Applications Module]
         CollabService[Collab & Builder Module]
@@ -42,7 +42,7 @@ graph TD
         JWT --> CollabService
     end
 
-    subgraph Persistence Layer [Database & ORM]
+    subgraph PersistenceLayer [Database & ORM]
         Prisma[Prisma ORM Client]
         Postgres[(PostgreSQL Database)]
         
@@ -52,7 +52,7 @@ graph TD
         Prisma --> Postgres
     end
 
-    Client Layer -- "HTTP/REST JSON" --> Network Layer
+    ClientLayer -- "HTTP/REST JSON" --> NetworkLayer
 ```
 
 ### Key Components:
