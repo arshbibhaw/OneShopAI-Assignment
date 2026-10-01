@@ -2,13 +2,19 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+const skillCache = new Set<string>();
+
 async function getOrCreateSkill(name: string) {
   const trimmed = name.trim();
-  return prisma.skill.upsert({
+  if (skillCache.has(trimmed)) return;
+  
+  await prisma.skill.upsert({
     where: { name: trimmed },
     update: {},
     create: { name: trimmed }
   });
+  
+  skillCache.add(trimmed);
 }
 
 async function mapSkills(skillsStr: string) {
@@ -355,7 +361,7 @@ async function main() {
     {
       title: 'Fintech Dashboard SaaS MVP',
       description: 'A high-performance dashboard template for financial applications. Needs complex charts, real-time data integration, and a polished dark mode design.',
-      category: 'Fintech',
+      category: 'Finance',
       projectType: 'Startup MVP',
       duration: '3-6 months',
       openRoles: 'Data Viz Engineer (D3/Recharts), UI Developer',
@@ -435,7 +441,7 @@ async function main() {
     {
       title: 'AI Companion for the Elderly',
       description: 'Building a simple tablet app powered by conversational AI to combat loneliness in elderly care homes.',
-      category: 'Social Impact',
+      category: 'Working Together',
       projectType: 'Side Project',
       duration: '3 months',
       openRoles: 'React Native Dev, Prompt Engineer',
@@ -455,7 +461,7 @@ async function main() {
     {
       title: 'Design System for EdTech Startup',
       description: 'Need a UI/UX designer to help establish the core design tokens and component library for a new educational platform.',
-      category: 'Design Engineering',
+      category: 'Creative Tech',
       projectType: 'Startup MVP',
       duration: '2 months',
       openRoles: 'UI/UX Designer',
