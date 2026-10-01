@@ -27,14 +27,15 @@ model Profile {
   id           String   @id @default(uuid())
   userId       String   @unique
   bio          String?
-  skills       String   // comma separated
   portfolio    String?
   linkedinUrl  String?
   githubUrl    String?
   location     String?
   currentRole  String?  // 'student' | 'employee' | 'founder'
   organization String?  // College if student, Company if employee/founder
+  
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills       Skill[]
 }
 
 model Job {
@@ -42,7 +43,6 @@ model Job {
   title        String
   organization String?
   description  String
-  requirements String        // comma separated
   location     String?
   compensation String?
   type         String        @default("Full-Time")
@@ -50,6 +50,7 @@ model Job {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   
+  requirements Skill[]
   applications Application[]
 }
 
@@ -71,26 +72,41 @@ model CollabRequest {
   creatorId      String
   title          String
   description    String
-  requiredSkills String   // comma separated
   category       String?
   coverImage     String?
   projectType    String?  @default("Side Project")
   duration       String?  @default("Unspecified")
   status         String   @default("open")
+  openRoles      String?
+  isClosed       Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
-  creator CollabMember[]
-  owner   User @relation("CreatedRequests", fields: [creatorId], references: [id], onDelete: Cascade)
+  requiredSkills Skill[]
+  creator        CollabMember[]
+  owner          User @relation("CreatedRequests", fields: [creatorId], references: [id], onDelete: Cascade)
 }
 
 model CollabMember {
   id              String   @id @default(uuid())
   collabRequestId String
   userId          String
-  status          String   @default("pending") // pending, accepted, rejected
+  role            String?
+  message         String?
+  portfolioLink   String?
+  status          String   @default("pending") // pending, accepted, rejected, withdrawn
+  rejectionReason String?
   joinedAt        DateTime @default(now())
   
   request CollabRequest @relation(fields: [collabRequestId], references: [id], onDelete: Cascade)
   user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id             String          @id @default(uuid())
+  name           String          @unique
+  
+  profiles       Profile[]
+  jobs           Job[]
+  collabRequests CollabRequest[]
 }

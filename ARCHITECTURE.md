@@ -69,6 +69,10 @@ erDiagram
     JOB ||--o{ APPLICATION : "receives (1:N)"
     COLLAB_REQUEST ||--o{ COLLAB_MEMBER : "enlists (1:N)"
 
+    SKILL }o--o{ PROFILE : "has (M:N)"
+    SKILL }o--o{ JOB : "requires (M:N)"
+    SKILL }o--o{ COLLAB_REQUEST : "needs (M:N)"
+
     USER {
         String id PK "UUID"
         String email UK "Unique email address"
@@ -84,7 +88,6 @@ erDiagram
         String id PK "UUID"
         String userId FK "1:1 reference to User"
         String bio "Short professional biography"
-        String skills "Comma-separated skill tags"
         String portfolio "Personal portfolio URL"
         String linkedinUrl "LinkedIn profile URL"
         String githubUrl "GitHub handle/URL"
@@ -98,7 +101,6 @@ erDiagram
         String title "Opportunity headline"
         String organization "Sponsor or hiring company"
         String description "Detailed overview"
-        String requirements "Comma-separated requirements"
         String location "Work location or Remote"
         String compensation "Stipend, salary, or scholarship value"
         String type "Full-Time | Internship | Scholarship | Hackathon"
@@ -122,7 +124,6 @@ erDiagram
         String creatorId FK "Reference to owner User"
         String title "Project title"
         String description "Project scope and mission"
-        String requiredSkills "Comma-separated needed skills"
         String category "Domain tag (AI, Web3, FinTech, etc.)"
         String coverImage "Banner image URL"
         String projectType "Side Project | Startup MVP | Hackathon | Open Source | Research"
@@ -138,6 +139,11 @@ erDiagram
         String userId FK "Member User reference"
         String status "pending | accepted | rejected"
         DateTime joinedAt "Timestamp"
+    }
+
+    SKILL {
+        String id PK "UUID"
+        String name UK "Unique skill name"
     }
 ```
 

@@ -3,6 +3,8 @@ import type { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
+import { validateRequest } from '../middleware/validate';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -15,14 +17,19 @@ const router = Router();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_dev';
 
-router.post('/register', async (req: Request, res: Response) => {
+const registerSchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+    name: z.string().optional(),
+    avatar: z.string().url().optional(),
+    username: z.string().optional()
+  })
+});
+
+router.post('/register', validateRequest(registerSchema), async (req: Request, res: Response) => {
   try {
     const { email, password, name, avatar, username } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required' });
-      return;
-    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -60,8 +67,7 @@ router.post('/register', async (req: Request, res: Response) => {
         avatar,
         profile: {
           create: {
-            bio: '',
-            skills: ''
+            bio: ''
           }
         }
       },
@@ -89,14 +95,16 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/login', async (req: Request, res: Response) => {
+const loginSchema = z.object({
+  body: z.object({
+    email: z.string().min(1),
+    password: z.string().min(1)
+  })
+});
+
+router.post('/login', validateRequest(loginSchema), async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: 'Email/Username and password are required' });
-      return;
-    }
 
     // Allow login via email or username
     const user = await prisma.user.findFirst({

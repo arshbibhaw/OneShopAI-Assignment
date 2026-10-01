@@ -1,7 +1,7 @@
-import { useEffect, useState, type MouseEvent, type FormEvent } from 'react';
+import { useEffect, useState, useRef, type MouseEvent, type FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Link } from 'react-router-dom';
-import { Search, ChevronDown, Bookmark, Check, Trash2, Plus, X as CloseIcon, Calendar, Upload, Bold, Italic, Underline, List, ListOrdered, Image as ImageIcon } from 'lucide-react';
+import { Search, ChevronDown, ChevronLeft, ChevronRight, Bookmark, Check, Trash2, Plus, X as CloseIcon, Calendar, Upload, Bold, Italic, Underline, List, ListOrdered, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface Job {
@@ -21,6 +21,10 @@ export default function Jobs() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Browse');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [page] = useState(1);
+  const [limit] = useState(50);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Interactive state
   const { user } = useAuth();
@@ -32,29 +36,126 @@ export default function Jobs() {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
 
+  // Category horizontal scroll controls
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollability = () => {
+    const el = categoryScrollRef.current;
+    if (el) {
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollability();
+    const handleResize = () => checkScrollability();
+    window.addEventListener('resize', handleResize);
+    const timer = setTimeout(checkScrollability, 150);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timer);
+    };
+  }, [allJobs, activeTab]);
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = 260;
+      categoryScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      setTimeout(checkScrollability, 300);
+    }
+  };
+
   // Modal form state
   const [formData, setFormData] = useState({
     title: '',
     type: 'Internship',
     organization: '',
     description: '',
-    location: ''
+    location: '',
+    deadline: '',
+    eventStarts: '',
+    eventEnds: '',
+    results: '',
+    compensation: '',
+    applyUrl: '',
+    tags: ''
   });
+  const [keyFacts, setKeyFacts] = useState<{ label: string, value: string }[]>([{ label: '', value: '' }]);
+  const [prizes, setPrizes] = useState<{ label: string, value: string }[]>([{ label: '', value: '' }]);
+  
+  // Image preview state & file input refs
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [bannerUrlInput, setBannerUrlInput] = useState('');
+  const [logoUrlInput, setLogoUrlInput] = useState('');
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
+  const deadlineInputRef = useRef<HTMLInputElement>(null);
+  const eventStartsInputRef = useRef<HTMLInputElement>(null);
+  const eventEndsInputRef = useRef<HTMLInputElement>(null);
+  const resultsInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (file: File, target: 'banner' | 'logo') => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload a valid image file (JPEG, PNG, GIF, WebP)');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (target === 'banner') {
+        setBannerPreview(dataUrl);
+      } else {
+        setLogoPreview(dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const categories = [
     { name: 'Full-Time', label: 'Full Time' },
     { name: 'Internship', label: 'Internship' },
     { name: 'Hackathon', label: 'Hackathon' },
-    { name: 'Scholarship', label: 'Scholarship' }
+    { name: 'Scholarship', label: 'Scholarship' },
+    { name: 'Startup Program', label: 'Startup Program' },
+    { name: 'Fellowships', label: 'Fellowships' }
   ];
 
+  const matchesCategory = (jobType: string | undefined, categoryName: string) => {
+    const jType = (jobType || '').toLowerCase().trim();
+    const cName = categoryName.toLowerCase().trim();
+    if (cName === 'full-time') return jType === 'full-time' || jType === 'full time';
+    if (cName === 'fellowships') return jType === 'fellowship' || jType === 'fellowships';
+    if (cName === 'startup program') return jType === 'startup program' || jType === 'startup';
+    return jType === cName;
+  };
+
   const fetchJobs = () => {
-    fetch(`http://localhost:4000/api/jobs?search=${search}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setAllJobs(data);
+    setIsLoading(true);
+    setError(null);
+    fetch(`http://localhost:4000/api/jobs?search=${search}&page=${page}&limit=${limit}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch jobs');
+        return res.json();
       })
-      .catch(err => console.error(err));
+      .then(data => {
+        if (data.jobs && Array.isArray(data.jobs)) {
+          setAllJobs(data.jobs);
+        } else if (Array.isArray(data)) {
+          setAllJobs(data);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setError('Could not load opportunities. Please try again.');
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const fetchApplications = () => {
@@ -75,7 +176,7 @@ export default function Jobs() {
 
   useEffect(() => {
     fetchJobs();
-  }, [search]);
+  }, [search, page, limit]);
 
   useEffect(() => {
     fetchApplications();
@@ -150,13 +251,33 @@ export default function Jobs() {
         description: formData.description,
         location: formData.location || 'Remote',
         type: formData.type,
-        requirements: []
+        compensation: formData.compensation,
+        requirements: formData.tags ? formData.tags.split(',').map(s => s.trim()).filter(Boolean) : []
       })
     })
       .then(res => res.json())
       .then(() => {
         setIsModalOpen(false);
-        setFormData({ title: '', type: 'Internship', organization: '', description: '', location: '' });
+        setFormData({
+          title: '',
+          type: 'Internship',
+          organization: '',
+          description: '',
+          location: '',
+          deadline: '',
+          eventStarts: '',
+          eventEnds: '',
+          results: '',
+          compensation: '',
+          applyUrl: '',
+          tags: ''
+        });
+        setBannerPreview(null);
+        setLogoPreview(null);
+        setBannerUrlInput('');
+        setLogoUrlInput('');
+        setKeyFacts([{ label: '', value: '' }]);
+        setPrizes([{ label: '', value: '' }]);
         fetchJobs();
       })
       .catch(console.error);
@@ -165,7 +286,7 @@ export default function Jobs() {
   // Filter jobs based on tabs and category
   let displayedJobs = allJobs;
   if (activeCategory && activeCategory !== 'Quick Apply') {
-    displayedJobs = displayedJobs.filter(j => j.type.toLowerCase() === activeCategory.toLowerCase());
+    displayedJobs = displayedJobs.filter(j => matchesCategory(j.type, activeCategory));
   }
   if (activeTab === 'Saved') {
     displayedJobs = displayedJobs.filter(j => savedJobs.has(j.id));
@@ -215,7 +336,7 @@ export default function Jobs() {
 
               <form onSubmit={handlePostSubmit} className="space-y-6">
                 {/* Type & Deadline */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-[14px] font-semibold text-slate-900 mb-2">Type</label>
                     <div className="relative">
@@ -228,20 +349,46 @@ export default function Jobs() {
                         <option value="Scholarship">Scholarship</option>
                         <option value="Hackathon">Hackathon</option>
                         <option value="Full-Time">Full-time Job</option>
+                        <option value="Startup Program">Startup Program</option>
+                        <option value="Fellowships">Fellowship</option>
                       </select>
                       <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[14px] font-semibold text-slate-900 mb-2">Deadline</label>
-                    <div className="relative">
-                      <Calendar size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <div 
+                      className="relative cursor-pointer"
+                      onClick={() => {
+                        try { deadlineInputRef.current?.showPicker(); } catch {}
+                      }}
+                    >
+                      <Calendar size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                       <input
-                        type="text"
-                        placeholder="Select a deadline"
-                        className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        ref={deadlineInputRef}
+                        type="date"
+                        value={formData.deadline}
+                        onChange={e => setFormData({ ...formData, deadline: e.target.value })}
+                        onClick={e => {
+                          try { (e.currentTarget as any).showPicker?.(); } catch {}
+                        }}
+                        className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 cursor-pointer"
                       />
-                      <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      {formData.deadline ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFormData({ ...formData, deadline: '' });
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 z-20"
+                          title="Clear date"
+                        >
+                          <CloseIcon size={16} />
+                        </button>
+                      ) : (
+                        <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -252,6 +399,8 @@ export default function Jobs() {
                   <input
                     type="text"
                     placeholder="e.g. ₹60K/mo stipend • ₹5L prize pool • Unpaid"
+                    value={formData.compensation}
+                    onChange={e => setFormData({ ...formData, compensation: e.target.value })}
                     className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                   <p className="text-[13px] text-slate-500 mt-2">Shown on the listing card and the hero. Leave blank if there's nothing to state.</p>
@@ -260,26 +409,59 @@ export default function Jobs() {
                 {/* Key dates */}
                 <div>
                   <label className="block text-[14px] font-semibold text-slate-900 mb-2">Key dates (optional)</label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-[13px] text-slate-500 mb-1.5">Event starts</label>
-                      <div className="relative">
-                        <input type="text" placeholder="dd-mm-yyyy" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
-                        <Calendar size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-900" />
+                      <div 
+                        className="relative cursor-pointer"
+                        onClick={() => {
+                          try { eventStartsInputRef.current?.showPicker(); } catch {}
+                        }}
+                      >
+                        <input 
+                          ref={eventStartsInputRef}
+                          type="date" 
+                          value={formData.eventStarts}
+                          onChange={e => setFormData({ ...formData, eventStarts: e.target.value })}
+                          onClick={e => { try { (e.currentTarget as any).showPicker?.(); } catch {} }}
+                          className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 cursor-pointer" 
+                        />
                       </div>
                     </div>
                     <div>
                       <label className="block text-[13px] text-slate-500 mb-1.5">Event ends</label>
-                      <div className="relative">
-                        <input type="text" placeholder="dd-mm-yyyy" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
-                        <Calendar size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-900" />
+                      <div 
+                        className="relative cursor-pointer"
+                        onClick={() => {
+                          try { eventEndsInputRef.current?.showPicker(); } catch {}
+                        }}
+                      >
+                        <input 
+                          ref={eventEndsInputRef}
+                          type="date" 
+                          value={formData.eventEnds}
+                          onChange={e => setFormData({ ...formData, eventEnds: e.target.value })}
+                          onClick={e => { try { (e.currentTarget as any).showPicker?.(); } catch {} }}
+                          className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 cursor-pointer" 
+                        />
                       </div>
                     </div>
                     <div>
                       <label className="block text-[13px] text-slate-500 mb-1.5">Results</label>
-                      <div className="relative">
-                        <input type="text" placeholder="dd-mm-yyyy" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
-                        <Calendar size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-900" />
+                      <div 
+                        className="relative cursor-pointer"
+                        onClick={() => {
+                          try { resultsInputRef.current?.showPicker(); } catch {}
+                        }}
+                      >
+                        <input 
+                          ref={resultsInputRef}
+                          type="date" 
+                          value={formData.results}
+                          onChange={e => setFormData({ ...formData, results: e.target.value })}
+                          onClick={e => { try { (e.currentTarget as any).showPicker?.(); } catch {} }}
+                          className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 cursor-pointer" 
+                        />
                       </div>
                     </div>
                   </div>
@@ -316,16 +498,98 @@ export default function Jobs() {
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-slate-900 mb-2">
                     <ImageIcon size={18} className="text-slate-500" /> Banner image <span className="text-slate-400 font-normal">(optional)</span>
                   </label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center bg-[#F9FAFB]/50">
-                    <div className="flex items-center gap-3">
-                      <button type="button" className="flex items-center gap-2 text-[#3C3CF0] font-semibold hover:bg-[#F0F4FF] px-4 py-2 rounded-full transition-colors">
-                        <Upload size={18} /> Click to upload
-                      </button>
-                      <span className="text-slate-400 text-[14px]">or</span>
-                      <input type="text" placeholder="paste image URL" className="bg-white border border-slate-200 rounded-full px-4 py-2 text-[14px] outline-none focus:border-primary w-48" />
+                  <input
+                    ref={bannerFileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file, 'banner');
+                    }}
+                  />
+                  {bannerPreview ? (
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-sm">
+                      <img
+                        src={bannerPreview}
+                        alt="Banner preview"
+                        className="w-full h-44 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                        <button
+                          type="button"
+                          onClick={() => bannerFileInputRef.current?.click()}
+                          className="px-4 py-2 bg-white text-slate-800 rounded-full text-xs font-semibold hover:bg-slate-50 transition-colors shadow flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Upload size={14} /> Change Banner
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBannerPreview(null);
+                            if (bannerFileInputRef.current) bannerFileInputRef.current.value = '';
+                          }}
+                          className="px-4 py-2 bg-red-600 text-white rounded-full text-xs font-semibold hover:bg-red-700 transition-colors shadow flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Trash2 size={14} /> Remove
+                        </button>
+                      </div>
+                      <div className="absolute bottom-2.5 left-3 bg-black/60 backdrop-blur-sm text-white text-[11px] px-2.5 py-0.5 rounded-full font-medium pointer-events-none">
+                        Banner preview
+                      </div>
                     </div>
-                    <p className="text-[13px] text-slate-400 mt-4">JPEG, PNG, GIF or WebP — you'll crop it next</p>
-                  </div>
+                  ) : (
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleImageUpload(file, 'banner');
+                      }}
+                      className="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-2xl p-8 flex flex-col items-center justify-center bg-[#F9FAFB]/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-wrap justify-center">
+                        <label
+                          onClick={() => bannerFileInputRef.current?.click()}
+                          className="flex items-center gap-2 text-[#3C3CF0] font-semibold hover:bg-[#F0F4FF] px-4 py-2 rounded-full transition-colors cursor-pointer"
+                        >
+                          <Upload size={18} /> Click to upload
+                        </label>
+                        <span className="text-slate-400 text-[14px]">or</span>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            placeholder="paste image URL"
+                            value={bannerUrlInput}
+                            onChange={(e) => setBannerUrlInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (bannerUrlInput.trim()) {
+                                  setBannerPreview(bannerUrlInput.trim());
+                                  setBannerUrlInput('');
+                                }
+                              }
+                            }}
+                            className="bg-white border border-slate-200 rounded-full px-4 py-2 text-[14px] outline-none focus:border-primary w-48"
+                          />
+                          {bannerUrlInput.trim() && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBannerPreview(bannerUrlInput.trim());
+                                setBannerUrlInput('');
+                              }}
+                              className="px-3 py-1.5 bg-[#3C3CF0] text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors"
+                            >
+                              Apply
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-slate-400 mt-4">JPEG, PNG, GIF or WebP — you'll crop it next</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Logo Image */}
@@ -333,16 +597,103 @@ export default function Jobs() {
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-slate-900 mb-2">
                     <ImageIcon size={18} className="text-slate-500" /> Logo <span className="text-slate-400 font-normal">(optional)</span>
                   </label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center bg-[#F9FAFB]/50">
-                    <div className="flex items-center gap-3">
-                      <button type="button" className="flex items-center gap-2 text-[#3C3CF0] font-semibold hover:bg-[#F0F4FF] px-4 py-2 rounded-full transition-colors">
-                        <Upload size={18} /> Click to upload
-                      </button>
-                      <span className="text-slate-400 text-[14px]">or</span>
-                      <input type="text" placeholder="paste image URL" className="bg-white border border-slate-200 rounded-full px-4 py-2 text-[14px] outline-none focus:border-primary w-48" />
+                  <input
+                    ref={logoFileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file, 'logo');
+                    }}
+                  />
+                  {logoPreview ? (
+                    <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 flex items-center justify-between shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden shadow-sm">
+                          <img
+                            src={logoPreview}
+                            alt="Logo preview"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">Logo preview</div>
+                          <p className="text-xs text-slate-500">Image loaded and ready</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => logoFileInputRef.current?.click()}
+                          className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-full text-xs font-semibold hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Upload size={14} /> Change
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLogoPreview(null);
+                            if (logoFileInputRef.current) logoFileInputRef.current.value = '';
+                          }}
+                          className="px-3.5 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-full text-xs font-semibold hover:bg-red-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Trash2 size={14} /> Remove
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-[13px] text-slate-400 mt-4">JPEG, PNG, GIF or WebP — you'll crop it next</p>
-                  </div>
+                  ) : (
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleImageUpload(file, 'logo');
+                      }}
+                      className="border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-2xl p-8 flex flex-col items-center justify-center bg-[#F9FAFB]/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-wrap justify-center">
+                        <label
+                          onClick={() => logoFileInputRef.current?.click()}
+                          className="flex items-center gap-2 text-[#3C3CF0] font-semibold hover:bg-[#F0F4FF] px-4 py-2 rounded-full transition-colors cursor-pointer"
+                        >
+                          <Upload size={18} /> Click to upload
+                        </label>
+                        <span className="text-slate-400 text-[14px]">or</span>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            placeholder="paste image URL"
+                            value={logoUrlInput}
+                            onChange={(e) => setLogoUrlInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (logoUrlInput.trim()) {
+                                  setLogoPreview(logoUrlInput.trim());
+                                  setLogoUrlInput('');
+                                }
+                              }
+                            }}
+                            className="bg-white border border-slate-200 rounded-full px-4 py-2 text-[14px] outline-none focus:border-primary w-48"
+                          />
+                          {logoUrlInput.trim() && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLogoPreview(logoUrlInput.trim());
+                                setLogoUrlInput('');
+                              }}
+                              className="px-3 py-1.5 bg-[#3C3CF0] text-white rounded-full text-xs font-semibold hover:bg-blue-600 transition-colors"
+                            >
+                              Apply
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-[13px] text-slate-400 mt-4">JPEG, PNG, GIF or WebP — you'll crop it next</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Location */}
@@ -366,7 +717,7 @@ export default function Jobs() {
                 {/* How should candidates apply */}
                 <div>
                   <label className="block text-[14px] font-semibold text-slate-900 mb-2">How should candidates apply?</label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="border-2 border-[#3C3CF0] bg-[#F0F4FF]/50 rounded-xl p-4 cursor-pointer">
                       <div className="font-semibold text-slate-900">External link</div>
                       <div className="text-[13px] text-slate-500 mt-0.5">Send to your link</div>
@@ -384,6 +735,8 @@ export default function Jobs() {
                   <input
                     type="text"
                     placeholder="https://..."
+                    value={formData.applyUrl}
+                    onChange={e => setFormData({ ...formData, applyUrl: e.target.value })}
                     className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                 </div>
@@ -394,6 +747,8 @@ export default function Jobs() {
                   <input
                     type="text"
                     placeholder="e.g. Machine Learning, Remote, Paid"
+                    value={formData.tags}
+                    onChange={e => setFormData({ ...formData, tags: e.target.value })}
                     className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                   />
                 </div>
@@ -433,18 +788,88 @@ export default function Jobs() {
                 <div>
                   <label className="block text-[14px] font-semibold text-slate-900 mb-1">Key facts (optional)</label>
                   <p className="text-[13px] text-slate-500 mb-3">Short label/value pairs for the panel beside the listing.</p>
-                  <button type="button" className="text-[#3C3CF0] font-semibold text-[14px] hover:underline">+ Add fact</button>
+                  <div className="space-y-3 mb-3">
+                    {keyFacts.map((fact, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder="Duration"
+                          value={fact.label}
+                          onChange={(e) => {
+                            const newFacts = [...keyFacts];
+                            newFacts[index].label = e.target.value;
+                            setKeyFacts(newFacts);
+                          }}
+                          className="w-1/2 bg-slate-50/50 border border-slate-200 rounded-full px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        />
+                        <input
+                          type="text"
+                          placeholder="6 months"
+                          value={fact.value}
+                          onChange={(e) => {
+                            const newFacts = [...keyFacts];
+                            newFacts[index].value = e.target.value;
+                            setKeyFacts(newFacts);
+                          }}
+                          className="w-1/2 bg-slate-50/50 border border-slate-200 rounded-full px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setKeyFacts(keyFacts.filter((_, i) => i !== index))}
+                          className="text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                          <CloseIcon size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => setKeyFacts([...keyFacts, { label: '', value: '' }])} className="text-[#3C3CF0] font-semibold text-[14px] hover:underline">+ Add fact</button>
                 </div>
 
                 {/* Prizes */}
                 <div>
                   <label className="block text-[14px] font-semibold text-slate-900 mb-1">Prizes (optional)</label>
                   <p className="text-[13px] text-slate-500 mb-3">The ranked award ladder. Rows appear in the order you add them.</p>
-                  <button type="button" className="text-[#3C3CF0] font-semibold text-[14px] hover:underline">+ Add prize</button>
+                  <div className="space-y-3 mb-3">
+                    {prizes.map((prize, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder="1st"
+                          value={prize.label}
+                          onChange={(e) => {
+                            const newPrizes = [...prizes];
+                            newPrizes[index].label = e.target.value;
+                            setPrizes(newPrizes);
+                          }}
+                          className="w-1/3 bg-slate-50/50 border border-slate-200 rounded-full px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        />
+                        <input
+                          type="text"
+                          placeholder="₹2,00,000 + internship"
+                          value={prize.value}
+                          onChange={(e) => {
+                            const newPrizes = [...prizes];
+                            newPrizes[index].value = e.target.value;
+                            setPrizes(newPrizes);
+                          }}
+                          className="w-2/3 bg-slate-50/50 border border-slate-200 rounded-full px-4 py-2.5 text-[15px] outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setPrizes(prizes.filter((_, i) => i !== index))}
+                          className="text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                          <CloseIcon size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => setPrizes([...prizes, { label: '', value: '' }])} className="text-[#3C3CF0] font-semibold text-[14px] hover:underline">+ Add prize</button>
                 </div>
 
                 <div className="pt-4 pb-0 mt-8 flex justify-end gap-3 sticky bottom-0 bg-white border-t border-slate-100 p-4 -mx-8 -mb-8 rounded-b-2xl">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded-full font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded-full font-semibold text-slate-600 hover:bg-red-500 hover:text-white transition-colors">
                     Cancel
                   </button>
                   <button type="submit" className="px-6 py-2.5 rounded-full font-semibold bg-[#75A5FF] text-white hover:bg-blue-500 transition-colors shadow-sm">
@@ -465,7 +890,7 @@ export default function Jobs() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div>
               <h1 className="text-[28px] font-bold text-slate-900 leading-tight tracking-tight">Opportunity Hub</h1>
-              <p className="text-slate-500 mt-1">15 live opportunities &middot; 5 closing this week</p>
+              <p className="text-slate-500 mt-1">{allJobs.length} live opportunities &middot; {Math.floor(allJobs.length / 3)} closing this week</p>
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
@@ -529,46 +954,108 @@ export default function Jobs() {
                 </div>
               </div>
 
-              <div className="flex gap-2.5 overflow-x-auto no-scrollbar mb-6 pb-2 pt-1 px-1 -mx-1">
+              <div className="relative flex items-center mb-6 gap-2">
                 <button
-                  onClick={() => setActiveCategory(activeCategory === 'Quick Apply' ? null : 'Quick Apply')}
-                  className={`flex items-center gap-1.5 border px-4 py-2 rounded-full text-[14px] font-bold whitespace-nowrap transition-all ${activeCategory === 'Quick Apply'
-                    ? 'border-[#3C3CF0] bg-[#3C3CF0] text-white shadow-sm'
-                    : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
-                    }`}
+                  type="button"
+                  onClick={() => scrollCategories('left')}
+                  disabled={!canScrollLeft}
+                  title="Scroll categories left"
+                  aria-label="Scroll left"
+                  className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-all duration-200 ${
+                    !canScrollLeft
+                      ? 'border-slate-100 bg-slate-50/50 text-slate-300 cursor-not-allowed'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 shadow-sm active:scale-95 cursor-pointer'
+                  }`}
                 >
-                  ⚡ Quick Apply
+                  <ChevronLeft size={17} strokeWidth={2.5} />
                 </button>
-                {categories.map((cat) => {
-                  const isActive = activeCategory === cat.name;
-                  const count = allJobs.filter(j => j.type.toLowerCase() === cat.name.toLowerCase()).length;
-                  return (
-                    <button
-                      key={cat.name}
-                      onClick={() => setActiveCategory(isActive ? null : cat.name)}
-                      className={`flex items-center gap-1.5 border px-4 py-2 rounded-full text-[14px] font-bold whitespace-nowrap transition-all ${isActive
-                        ? 'border-[#3C3CF0] bg-white text-[#3C3CF0] shadow-sm'
-                        : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
-                        }`}
-                    >
-                      <div className={`w-3.5 h-3.5 grid grid-cols-2 gap-[1.5px] opacity-70 ${isActive ? 'text-[#3C3CF0]' : 'text-slate-400'}`}>
-                        <div className="bg-current rounded-[1.5px]"></div>
-                        <div className="bg-current rounded-[1.5px]"></div>
-                        <div className="bg-current rounded-[1.5px]"></div>
-                        <div className="bg-current rounded-[1.5px]"></div>
-                      </div>
-                      {cat.label}
-                      <span className={`ml-1 font-bold ${isActive ? 'text-[#3C3CF0]/80' : 'text-slate-400'}`}>{count}</span>
-                    </button>
-                  );
-                })}
+
+                <div
+                  ref={categoryScrollRef}
+                  onScroll={checkScrollability}
+                  className="flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 flex-1 items-center"
+                >
+                  <button
+                    onClick={() => setActiveCategory(activeCategory === 'Quick Apply' ? null : 'Quick Apply')}
+                    className={`flex items-center gap-1.5 border px-4 py-2 rounded-full text-[14px] font-bold whitespace-nowrap transition-all shrink-0 ${activeCategory === 'Quick Apply'
+                      ? 'border-[#3C3CF0] bg-[#3C3CF0] text-white shadow-sm'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                      }`}
+                  >
+                    ⚡ Quick Apply
+                  </button>
+                  {categories.map((cat) => {
+                    const isActive = activeCategory === cat.name;
+                    const count = allJobs.filter(j => matchesCategory(j.type, cat.name)).length;
+                    return (
+                      <button
+                        key={cat.name}
+                        onClick={() => setActiveCategory(isActive ? null : cat.name)}
+                        className={`flex items-center gap-1.5 border px-4 py-2 rounded-full text-[14px] font-bold whitespace-nowrap transition-all shrink-0 ${isActive
+                          ? 'border-[#3C3CF0] bg-white text-[#3C3CF0] shadow-sm'
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                          }`}
+                      >
+                        <div className={`w-3.5 h-3.5 grid grid-cols-2 gap-[1.5px] opacity-70 ${isActive ? 'text-[#3C3CF0]' : 'text-slate-400'}`}>
+                          <div className="bg-current rounded-[1.5px]"></div>
+                          <div className="bg-current rounded-[1.5px]"></div>
+                          <div className="bg-current rounded-[1.5px]"></div>
+                          <div className="bg-current rounded-[1.5px]"></div>
+                        </div>
+                        {cat.label}
+                        <span className={`ml-1 font-bold ${isActive ? 'text-[#3C3CF0]/80' : 'text-slate-400'}`}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => scrollCategories('right')}
+                  disabled={!canScrollRight}
+                  title="Scroll categories right"
+                  aria-label="Scroll right"
+                  className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-all duration-200 ${
+                    !canScrollRight
+                      ? 'border-slate-100 bg-slate-50/50 text-slate-300 cursor-not-allowed'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 shadow-sm active:scale-95 cursor-pointer'
+                  }`}
+                >
+                  <ChevronRight size={17} strokeWidth={2.5} />
+                </button>
               </div>
             </>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-            {visibleJobs.length > 0 ? visibleJobs.map((job: Job) => {
-              const isSaved = savedJobs.has(job.id);
+          {error ? (
+            <div className="col-span-full py-12 text-center border-2 border-red-100 rounded-3xl bg-red-50/50 mt-4">
+              <p className="text-red-500 font-medium mb-4">{error}</p>
+              <button onClick={fetchJobs} className="px-4 py-2 bg-red-100 text-red-600 rounded-full font-bold text-sm hover:bg-red-200 transition-colors">Try Again</button>
+            </div>
+          ) : isLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
+              {[1, 2, 3, 4].map(n => (
+                <Card key={n} className="border border-slate-200 rounded-[20px] overflow-hidden bg-white p-5 animate-pulse">
+                  <div className="flex gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-200"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-slate-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-3 bg-slate-100 rounded w-1/4"></div>
+                    </div>
+                  </div>
+                  <div className="h-5 bg-slate-200 rounded w-3/4 mb-3"></div>
+                  <div className="h-4 bg-slate-100 rounded w-1/2 mb-8"></div>
+                  <div className="flex justify-between items-end">
+                    <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+                    <div className="h-8 bg-slate-200 rounded-full w-20"></div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
+              {visibleJobs.length > 0 ? visibleJobs.map((job: Job) => {
+                const isSaved = savedJobs.has(job.id);
               const appStatus = applications[job.id];
               const isApplied = !!appStatus;
 
@@ -665,9 +1152,10 @@ export default function Jobs() {
                 </p>
               </div>
             )}
-          </div>
+            </div>
+          )}
 
-          {displayedJobs.length > visibleCount && (
+          {displayedJobs.length > visibleCount && !isLoading && !error && (
             <div className="mt-8 flex justify-center">
               <button
                 onClick={() => setVisibleCount(prev => prev + 6)}

@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
+import { useAuth } from '../context/AuthContext';
 
 export default function JobDetails() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [appStatus, setAppStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`http://localhost:4000/api/jobs/${id}`)
@@ -19,6 +22,65 @@ export default function JobDetails() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (user && id) {
+      fetch(`http://localhost:4000/api/jobs/applications/user/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const application = data.find(app => app.jobId === id);
+            if (application) {
+              setAppStatus(application.status);
+            }
+          }
+        })
+        .catch(console.error);
+    }
+  }, [user, id]);
+
+  const handleApply = (e: MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      alert('Please log in to apply.');
+      return;
+    }
+    fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) alert(data.error);
+        else {
+          setAppStatus(data.status || 'pending');
+          alert('Application submitted successfully!');
+        }
+      })
+      .catch(console.error);
+  };
+
+  const handleWithdraw = (e: MouseEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!window.confirm('Are you sure you want to withdraw your application?')) return;
+    
+    fetch(`http://localhost:4000/api/jobs/${id}/apply`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) alert(data.error);
+        else {
+          setAppStatus(null);
+          alert('Application withdrawn successfully.');
+        }
+      })
+      .catch(console.error);
+  };
 
   if (loading) return <div className="text-center py-20">Loading...</div>;
   if (!job) return <div className="text-center py-20 text-destructive">Job not found.</div>;
@@ -52,7 +114,7 @@ export default function JobDetails() {
               <div className="mt-12">
                 <div className="mb-2">
                    <span className="inline-block bg-[#F3E8FF] text-[#7828F0] px-3 py-1.5 rounded-full text-[12px] font-bold">
-                     {job.type === 'Scholarship' ? '🎓 ' : job.type === 'Internship' ? '💼 ' : job.type === 'Hackathon' ? '💻 ' : ''}{job.type || 'Opportunity'}
+                     {job.type === 'Scholarship' ? '🎓 ' : job.type === 'Internship' ? '💼 ' : job.type === 'Hackathon' ? '💻 ' : job.type === 'Startup Program' ? '🚀 ' : job.type === 'Fellowships' ? '🤝 ' : ''}{job.type || 'Opportunity'}
                    </span>
                 </div>
                 <h1 className="text-2xl font-extrabold text-slate-900 mb-2">{job.title}</h1>
@@ -162,10 +224,21 @@ export default function JobDetails() {
                  <span className="text-[13px] font-bold text-slate-900">1 Dec &ndash; 7 May</span>
               </div>
 
-              <button className="w-full bg-[#E6F4EA] text-[#0F6F4C] border border-[#A5D6A7] hover:bg-[#D5E8DB] py-3 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 transition-colors mb-3 shadow-sm">
-                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                 Applied
-              </button>
+              {appStatus ? (
+                <div className="flex flex-col gap-2 mb-3">
+                  <button className={`w-full py-3 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 transition-colors shadow-sm cursor-default ${appStatus === 'accepted' ? 'bg-[#E6F4EA] text-[#0F6F4C] border border-[#A5D6A7]' : appStatus === 'rejected' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
+                    {appStatus === 'accepted' ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> : null}
+                    {appStatus.charAt(0).toUpperCase() + appStatus.slice(1)}
+                  </button>
+                  <button onClick={handleWithdraw} className="text-[13px] font-semibold text-slate-500 hover:text-red-500 transition-colors text-center">
+                    Withdraw Application
+                  </button>
+                </div>
+              ) : (
+                <button onClick={handleApply} className="w-full bg-[#3C3CF0] text-white hover:bg-[#3131D0] py-3 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 transition-colors mb-3 shadow-sm">
+                  Apply Now
+                </button>
+              )}
               
               <p className="text-center text-[12px] text-slate-500 mb-6 px-2 leading-tight">
                  Takes ~2 minutes &middot; applies with your OneShopAI profile

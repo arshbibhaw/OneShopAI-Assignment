@@ -21,6 +21,17 @@ app.use('/api/jobs', jobsRouter);
 app.use('/api/collab', collabRouter);
 app.use('/api/auth', authRouter);
 
+// 404 handler
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Global error handler
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled Error:', err.stack || err);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -47,8 +47,9 @@ A modern, full-stack collaborative platform powering the **OneShopAI Opportunity
 ### Backend
 - **Runtime**: Node.js
 - **Framework**: Express.js with TypeScript (`tsx` watch engine)
+- **Validation**: Zod for runtime schema validation on all POST/PUT routes
 - **ORM & Database**: [Prisma ORM](https://www.prisma.io/) with SQLite for effortless, zero-config local development (seamlessly migratable to PostgreSQL in production)
-- **Authentication**: JWT token-based auth with bcrypt password hashing
+- **Authentication & Security**: JWT token-based auth with bcrypt password hashing, IDOR protections, and a centralized global error-handling middleware.
 
 ---
 
@@ -130,19 +131,20 @@ Visit **`http://localhost:5173`** in your browser. The default demo user is pre-
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
-| `/api/auth/register` | `POST` | Register a new user with email, password, name, and unique `@username` |
-| `/api/auth/login` | `POST` | Authenticate user via email or username |
+| `/api/auth/register` | `POST` | Register a new user with email, password, name, and unique `@username` (Zod Validated) |
+| `/api/auth/login` | `POST` | Authenticate user via email or username (Zod Validated) |
 | `/api/auth/me` | `GET` | Fetch authenticated user data and profile |
-| `/api/auth/profile` | `PUT` | Update profile (role, organization, skills, bio, social URLs) |
-| `/api/jobs` | `GET` | Retrieve opportunities with search and category filters |
+| `/api/collab/profile` | `PUT` | Update profile (role, organization, skills, bio, social URLs) (Zod Validated) |
+| `/api/jobs` | `GET` | Retrieve opportunities with search, category filters, and pagination |
+| `/api/jobs` | `POST` | Create a new job/opportunity (Zod Validated) |
 | `/api/jobs/:id` | `GET` | Retrieve full job listing details |
-| `/api/jobs/:id/apply` | `POST` | Submit an application for an opportunity |
-| `/api/jobs/:id/apply` | `DELETE` | Withdraw an application |
+| `/api/jobs/:id/apply` | `POST` | Submit an application for an opportunity (Protected) |
+| `/api/jobs/:id/apply` | `DELETE` | Withdraw an application (Protected) |
 | `/api/jobs/applications/user/:userId` | `GET` | Fetch all applications submitted by a specific user |
 | `/api/collab/requests` | `GET` | Fetch all open collaboration project requests |
-| `/api/collab/requests` | `POST` | Create a new project collaboration request |
-| `/api/collab/requests/:id/join` | `POST` | Submit a request to join a project |
-| `/api/collab/builders` | `GET` | List all builder directory profiles |
+| `/api/collab/requests` | `POST` | Create a new project collaboration request (Zod Validated, Protected) |
+| `/api/collab/requests/:id/join` | `POST` | Submit a request to join a project (Protected) |
+| `/api/collab/profiles` | `GET` | List all builder directory profiles |
 
 ---
 
