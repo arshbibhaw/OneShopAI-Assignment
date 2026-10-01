@@ -118,7 +118,7 @@ async function main() {
       skills: 'React,Tailwind CSS,API Integration',
       location: 'Remote',
       compensation: '$60 - $80 / hr',
-      type: 'Quick Apply'
+      type: 'Startup Program'
     },
     {
       title: 'Technical Writer (Contract)',
@@ -127,7 +127,7 @@ async function main() {
       skills: 'Technical Writing,PostgreSQL,Markdown',
       location: 'Remote, Global',
       compensation: '$50 / hr',
-      type: 'Quick Apply'
+      type: 'Fellowships'
     },
     {
       title: 'UI Design Contractor for Landing Page',
@@ -136,7 +136,7 @@ async function main() {
       skills: 'Figma,Web Design,Branding',
       location: 'Remote',
       compensation: '$4,000 Flat',
-      type: 'Quick Apply'
+      type: 'Startup Program'
     },
     // Full-Time
     {
@@ -146,7 +146,7 @@ async function main() {
       skills: 'React,Web Performance,TypeScript',
       location: 'Remote, India',
       compensation: '₹28,00,000 - ₹38,00,000 / yr',
-      type: 'Full-Time'
+      type: 'Full Time'
     },
     {
       title: 'AI Systems Researcher (Generative AI)',
@@ -155,7 +155,7 @@ async function main() {
       skills: 'Computer Science,PyTorch,Large Language Models',
       location: 'San Francisco, CA',
       compensation: '$250,000 - $350,000 / yr',
-      type: 'Full-Time'
+      type: 'Full Time'
     },
     {
       title: 'Full Stack Product Engineer',
@@ -164,7 +164,7 @@ async function main() {
       skills: 'React,TypeScript,API Design,Distributed Systems',
       location: 'Remote, Global',
       compensation: '$140,000 - $175,000 / yr',
-      type: 'Full-Time'
+      type: 'Full Time'
     },
     {
       title: 'Product Design Engineer',
@@ -173,7 +173,7 @@ async function main() {
       skills: 'Figma,CSS,React,TypeScript',
       location: 'San Francisco, CA / Remote',
       compensation: '$150,000 - $185,000 / yr',
-      type: 'Full-Time'
+      type: 'Full Time'
     },
     // Internships
     {
@@ -183,7 +183,7 @@ async function main() {
       skills: 'Machine Learning,PyTorch,Deep Learning',
       location: 'London, UK / New York, NY',
       compensation: '$58 / hr + Housing Stipend',
-      type: 'Internships'
+      type: 'Internship'
     },
     {
       title: 'Frontend Engineering Intern',
@@ -192,7 +192,7 @@ async function main() {
       skills: 'JavaScript,TypeScript,WebGL,Canvas',
       location: 'San Francisco, CA (Hybrid)',
       compensation: '$52 / hr',
-      type: 'Internships'
+      type: 'Internship'
     },
     {
       title: 'Software Engineer Intern - Core Systems',
@@ -201,7 +201,7 @@ async function main() {
       skills: 'Python,Go,Rust,CS Fundamentals',
       location: 'San Francisco, CA',
       compensation: '$60 / hr + Benefits',
-      type: 'Internships'
+      type: 'Internship'
     },
     {
       title: 'Open Source Fellow & Intern',
@@ -210,7 +210,7 @@ async function main() {
       skills: 'PostgreSQL,TypeScript,Node.js',
       location: 'Remote',
       compensation: '$40 / hr',
-      type: 'Internships'
+      type: 'Fellowships'
     },
     // Hackathons
     {
@@ -220,7 +220,7 @@ async function main() {
       skills: 'AI Agents,LLM APIs,Open Source',
       location: 'Hillsborough, CA',
       compensation: '$50,000 Prize Pool',
-      type: 'Hackathons'
+      type: 'Hackathon'
     },
     {
       title: 'HackMIT 2026 - Autonomous Web Sprint',
@@ -229,7 +229,7 @@ async function main() {
       skills: 'Prototyping,Full Stack Development',
       location: 'Cambridge, MA',
       compensation: '$30,000 Prizes',
-      type: 'Hackathons'
+      type: 'Hackathon'
     },
     {
       title: 'Solana Global AI x Web3 Hackathon',
@@ -238,7 +238,7 @@ async function main() {
       skills: 'Rust,TypeScript,Smart Contracts,Web3',
       location: 'Virtual',
       compensation: '$100,000 Total Pool',
-      type: 'Hackathons'
+      type: 'Hackathon'
     },
     // Scholarships
     {
@@ -248,7 +248,7 @@ async function main() {
       skills: 'Undergraduate,Computer Science,Leadership',
       location: 'North America & APAC',
       compensation: '$10,000 Merit Grant',
-      type: 'Scholarships'
+      type: 'Scholarship'
     },
     {
       title: 'Palantir Future Tech Builders Scholarship',
@@ -257,7 +257,52 @@ async function main() {
       skills: 'STEM major,Data Engineering,Software Systems',
       location: 'United States & Canada',
       compensation: '$7,000 Grant + Summer Fast-track',
-      type: 'Scholarships'
+      type: 'Scholarship'
+    },
+    {
+      title: 'OpenAI Scholar Program',
+      organization: 'OpenAI',
+      description: 'A 6-month full-time stipend program for individuals looking to transition into AI research from underrepresented backgrounds.',
+      skills: 'Machine Learning,Python,Mathematics',
+      location: 'San Francisco, CA',
+      compensation: '$15,000 / mo Stipend',
+      type: 'Fellowships'
+    },
+    {
+      title: 'Y Combinator W27 Batch',
+      organization: 'Y Combinator',
+      description: 'Funding and mentorship for early-stage startups. Applications are open for the Winter 2027 batch.',
+      skills: 'Founder,Startup,Product',
+      location: 'San Francisco, CA',
+      compensation: '$500,000 for 7%',
+      type: 'Startup Program'
+    },
+    {
+      title: 'Data Science Intern',
+      organization: 'Netflix',
+      description: 'Join the personalization team to improve the algorithms that recommend content to millions of users worldwide.',
+      skills: 'Python,SQL,A/B Testing,Machine Learning',
+      location: 'Los Gatos, CA',
+      compensation: '$55 / hr + Housing',
+      type: 'Internship'
+    },
+    {
+      title: 'Rust Infrastructure Engineer',
+      organization: 'Cloudflare',
+      description: 'Build fast, memory-safe, and highly concurrent networking services that power the internet edge.',
+      skills: 'Rust,Networking,Systems Engineering',
+      location: 'Remote, US',
+      compensation: '$160,000 - $210,000 / yr',
+      type: 'Full Time'
+    },
+    {
+      title: 'Global AI Summit Hackathon',
+      organization: 'Anthropic & AWS',
+      description: 'Build enterprise-grade AI tools using Claude 3.5 Sonnet and AWS infrastructure over a 48-hour sprint.',
+      skills: 'AI Agents,AWS,Prompt Engineering',
+      location: 'Virtual',
+      compensation: '$75,000 Total Prizes',
+      type: 'Hackathon'
     }
   ];
 
@@ -280,7 +325,7 @@ async function main() {
     {
       title: 'Open Source AI Code Editor (Cursor Alternative)',
       description: 'Building an open-source, extensible code editor with deep AI integration using Rust and React. Looking for contributors passionate about developer tooling.',
-      category: 'Open Source',
+      category: 'Working Together',
       projectType: 'Open Source',
       duration: '3-6 months',
       openRoles: 'Rust Developer, UI Designer',
@@ -290,7 +335,7 @@ async function main() {
     {
       title: 'Local Farmers Market Connector App',
       description: 'A React Native mobile application to connect local farmers directly with consumers. Features inventory management and map integration.',
-      category: 'Social Impact',
+      category: 'Post a Need',
       projectType: 'Side Project',
       duration: '1-3 months',
       openRoles: 'React Native Dev, Backend (Node.js)',
@@ -300,7 +345,7 @@ async function main() {
     {
       title: 'Next.js & Tailwind High-End UI Library',
       description: 'Creating a beautiful, accessible UI component library for Next.js. The goal is to provide a premium alternative to existing open-source libraries like shadcn/ui.',
-      category: 'Design Engineering',
+      category: 'How Collab Works',
       projectType: 'Open Source',
       duration: 'Ongoing',
       openRoles: 'Frontend Developer, Accessibility Expert',
@@ -320,7 +365,7 @@ async function main() {
     {
       title: 'AI Audio Transcription & Summary App',
       description: 'A desktop application that uses local LLMs (Llama 3) to transcribe and summarize audio recordings with complete privacy. Built with Electron.',
-      category: 'AI/ML',
+      category: 'Developer Tools',
       projectType: 'Startup MVP',
       duration: '1-3 months',
       openRoles: 'Python Dev (AI), Electron Developer',
@@ -385,6 +430,56 @@ async function main() {
       duration: '1-2 weeks',
       openRoles: 'JavaScript Developer',
       skills: 'JavaScript,Chrome Extension API,HTML/CSS',
+      creatorId: u5.id
+    },
+    {
+      title: 'AI Companion for the Elderly',
+      description: 'Building a simple tablet app powered by conversational AI to combat loneliness in elderly care homes.',
+      category: 'Social Impact',
+      projectType: 'Side Project',
+      duration: '3 months',
+      openRoles: 'React Native Dev, Prompt Engineer',
+      skills: 'React Native,OpenAI API,UX Design',
+      creatorId: u3.id
+    },
+    {
+      title: 'Rust Web Framework Benchmarking',
+      description: 'Setting up a comprehensive suite to benchmark Axum vs Actix-web under extreme load. Looking for performance geeks.',
+      category: 'Developer Tools',
+      projectType: 'Research',
+      duration: '1 month',
+      openRoles: 'Rust Developer, DevOps',
+      skills: 'Rust,Docker,Load Testing,K6',
+      creatorId: u4.id
+    },
+    {
+      title: 'Design System for EdTech Startup',
+      description: 'Need a UI/UX designer to help establish the core design tokens and component library for a new educational platform.',
+      category: 'Design Engineering',
+      projectType: 'Startup MVP',
+      duration: '2 months',
+      openRoles: 'UI/UX Designer',
+      skills: 'Figma,Design Systems,CSS',
+      creatorId: u2.id
+    },
+    {
+      title: 'Decentralized Identity Protocol',
+      description: 'Creating a privacy-first identity solution on Ethereum using Zero-Knowledge proofs.',
+      category: 'Web3 / Crypto',
+      projectType: 'Open Source',
+      duration: 'Ongoing',
+      openRoles: 'Solidity Developer, Cryptographer',
+      skills: 'Solidity,ZK Proofs,Ethereum',
+      creatorId: u1.id
+    },
+    {
+      title: 'ML Models for Predicting Stock Volatility',
+      description: 'Training time-series models to predict short-term volatility in tech stocks. Academic research project.',
+      category: 'Finance',
+      projectType: 'Research',
+      duration: '4-6 months',
+      openRoles: 'Data Scientist, Financial Analyst',
+      skills: 'Python,Pandas,TensorFlow,Finance',
       creatorId: u5.id
     }
   ];

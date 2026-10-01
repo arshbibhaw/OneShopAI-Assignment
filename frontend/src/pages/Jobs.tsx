@@ -120,9 +120,9 @@ export default function Jobs() {
   };
 
   const categories = [
-    { name: 'Full-Time', label: 'Full Time' },
-    { name: 'Internship', label: 'Internship' },
+    { name: 'Full Time', label: 'Full Time' },
     { name: 'Hackathon', label: 'Hackathon' },
+    { name: 'Internship', label: 'Internship' },
     { name: 'Scholarship', label: 'Scholarship' },
     { name: 'Startup Program', label: 'Startup Program' },
     { name: 'Fellowships', label: 'Fellowships' }
@@ -984,15 +984,7 @@ export default function Jobs() {
                   onScroll={checkScrollability}
                   className="flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 flex-1 items-center"
                 >
-                  <button
-                    onClick={() => setActiveCategory(activeCategory === 'Quick Apply' ? null : 'Quick Apply')}
-                    className={`flex items-center gap-1.5 border px-4 py-2 rounded-full text-[14px] font-bold whitespace-nowrap transition-all shrink-0 ${activeCategory === 'Quick Apply'
-                      ? 'border-[#3C3CF0] bg-[#3C3CF0] text-white shadow-sm'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
-                      }`}
-                  >
-                    ⚡ Quick Apply
-                  </button>
+                  {/* Categories Map */}
                   {categories.map((cat) => {
                     const isActive = activeCategory === cat.name;
                     const count = allJobs.filter(j => matchesCategory(j.type, cat.name)).length;

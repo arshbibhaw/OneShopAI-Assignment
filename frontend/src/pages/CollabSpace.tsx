@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, useRef, type FormEvent } from 'react';
 import { Card, CardContent, CardFooter, CardTitle } from '../components/ui/card';
-import { Search, User, Pencil, LogIn, Mail, Lock, Plus, X, MapPin, GraduationCap, Briefcase, Rocket, Globe } from 'lucide-react';
+import { Search, User, Pencil, LogIn, Mail, Lock, Plus, X, MapPin, GraduationCap, Briefcase, Rocket, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../config/api';
 
@@ -70,6 +70,25 @@ export default function CollabSpace() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [visibleCount, setVisibleCount] = useState(6);
+
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollability = () => {
+    if (categoryScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = 300;
+      categoryScrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     setVisibleCount(6);
@@ -912,16 +931,39 @@ export default function CollabSpace() {
 
         {activeTab === 'Discover Channels' && (
           <div className="mb-10 flex flex-col gap-5">
-            <div className="flex flex-wrap gap-3">
-              {['All', 'How Collab Works', 'Post a Need', 'Working Together'].map(cat => (
+            <div className="relative group w-full">
+              {canScrollLeft && (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`${selectedCategory === cat ? 'bg-[#A7F3D0] text-[#065F46] border-transparent' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'} px-5 py-2 border rounded-full text-[15px] font-bold transition-colors`}
+                  onClick={() => handleScroll('left')}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#3C3CF0] z-10 hidden sm:flex transition-all"
                 >
-                  {cat}
+                  <ChevronLeft size={16} />
                 </button>
-              ))}
+              )}
+              {canScrollRight && (
+                <button
+                  onClick={() => handleScroll('right')}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 w-8 h-8 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#3C3CF0] z-10 hidden sm:flex transition-all"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              )}
+
+              <div
+                ref={categoryScrollRef}
+                onScroll={checkScrollability}
+                className="flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 items-center"
+              >
+                {['All', 'How Collab Works', 'Post a Need', 'Working Together', 'Developer Tools', 'Hackathon', 'AI Research', 'Creative Tech', 'Web3 / Crypto', 'Finance', 'Productivity'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`${selectedCategory === cat ? 'bg-[#A7F3D0] text-[#065F46] border-transparent shadow-sm' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'} px-5 py-2 border rounded-full text-[14px] whitespace-nowrap font-bold transition-colors shrink-0`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
