@@ -32,9 +32,16 @@ export default function LandingPage() {
             <div className="space-y-12">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">Why a minimal, structured landing page?</h3>
-                <p className="text-slate-700 mb-2"><strong>What I changed:</strong> I redesigned the landing page from a generic welcome screen into a structured, document-style layout with a clean light theme.</p>
-                <p className="text-slate-700 mb-2"><strong>Why:</strong> A landing page sets the tone. Instead of over-designing it with complex animations or unnecessary filler, I made it completely focused on the reasoning behind the improvements. A minimal, distraction-free layout signals professionalism and respect for the reader's time. It lets the work speak for itself.</p>
-                <p className="text-slate-700"><strong>Expected impact:</strong> I expect evaluators or users to immediately understand the purpose of the assignment without being overwhelmed by visual noise.</p>
+                <p className="text-slate-700 mb-2"><strong>What I built:</strong> A short, document-style page with a clean light theme, placed at the start of the experience. It works as the brief for everything that follows.</p>
+                <p className="text-slate-700 mb-2"><strong>The thinking:</strong> An evaluator opens many submissions, so the first screen has to answer three questions fast: what was built, what was decided, and why. I made the landing page do exactly that. It states the problems I found, the changes I made, and the reasoning behind each one, so the reader has context before they touch any feature. I left out heavy animation and decoration on purpose. Every element on the page earns its place by helping someone understand the work.</p>
+                <p className="text-slate-700 mb-2"><strong>The flow:</strong> I kept the journey to three steps, each with one job:</p>
+                <ul className="list-disc pl-5 mb-2 text-slate-700 space-y-1">
+                  <li><strong>Landing page:</strong> the context and the reasoning.</li>
+                  <li><strong>Authentication:</strong> a real sign-in, since both modules depend on user identity and permissions.</li>
+                  <li><strong>Two clear paths:</strong> the Opportunity Hub and the Collab Space, one for each task in the brief.</li>
+                </ul>
+                <p className="text-slate-700 mb-2">Nobody has to guess where to go next, and the structure mirrors how the product itself is organised.</p>
+                <p className="text-slate-700"><strong>Expected impact:</strong> I expect an evaluator to understand the purpose, scope, and reasoning of the project within the first minute, and then move through both modules with that context already in mind. With the decisions explained up front, they can spend their time judging the work instead of working out what it is.</p>
               </div>
             </div>
           </div>

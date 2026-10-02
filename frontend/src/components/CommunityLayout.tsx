@@ -143,71 +143,29 @@ export default function CommunityLayout({ children }: LayoutProps) {
               aria-label="Messages"
             >
               <MessageSquare size={19} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#7828F0] rounded-full ring-2 ring-white"></span>
             </button>
             {messagesOpen && (
               <div
                 className="absolute top-full right-0 mt-1 w-[360px] bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-slate-100 flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-4"
               >
                 <div className="px-5 py-3.5 flex justify-between items-center bg-white border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[16px] text-slate-900 tracking-tight">Messages</h3>
-                    <span className="bg-[#F3E8FF] text-[#7828F0] text-xs font-bold px-2 py-0.5 rounded-full">2 new</span>
-                  </div>
+                  <h3 className="font-bold text-[16px] text-slate-900 tracking-tight">Messages</h3>
                   <button className="p-1.5 rounded-lg bg-[#F3E8FF] text-[#7828F0] hover:bg-[#E9D5FF] transition-colors shadow-sm">
-                    <Edit size={15} strokeWidth={2.5} />
+                    <Edit size={16} strokeWidth={2} />
                   </button>
                 </div>
-                <div className="px-4 py-2.5 border-b border-slate-100 bg-white">
+                <div className="px-4 py-2.5 bg-white">
                   <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                    <input type="text" placeholder="Search messages..." className="w-full bg-[#F1F5F9] rounded-full py-1.5 pl-9 pr-4 text-[13px] outline-none focus:bg-slate-200 transition-colors text-slate-800 placeholder:text-slate-400 font-medium" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input type="text" placeholder="Search messages" className="w-full bg-[#F8FAFC] rounded-full py-2 pl-9 pr-4 text-[14px] outline-none focus:bg-slate-100 transition-colors text-slate-800 placeholder:text-slate-400 font-medium" />
                   </div>
                 </div>
-                <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
-                  <div className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3 bg-[#FAF5FF]/40">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7828F0] to-[#A855F7] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
-                      SC
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-baseline mb-0.5">
-                        <span className="font-bold text-[13px] text-slate-900 truncate">Sarah Chen</span>
-                        <span className="text-[11px] text-slate-400 font-medium">12m ago</span>
-                      </div>
-                      <p className="text-[12px] text-slate-600 line-clamp-1 font-medium">Hey! Loved your post on Agentic AI workflows. Are you free to collab?</p>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-[#7828F0] mt-2 shrink-0"></div>
-                  </div>
-
-                  <div className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3 bg-[#FAF5FF]/40">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#28A0F0] to-[#3B82F6] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
-                      AR
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-baseline mb-0.5">
-                        <span className="font-bold text-[13px] text-slate-900 truncate">Alex Rivera</span>
-                        <span className="text-[11px] text-slate-400 font-medium">1h ago</span>
-                      </div>
-                      <p className="text-[12px] text-slate-600 line-clamp-1 font-medium">Your submission for the Global AI Hackathon was approved! 🎉</p>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-[#7828F0] mt-2 shrink-0"></div>
-                  </div>
-
-                  <div className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
-                      OS
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-baseline mb-0.5">
-                        <span className="font-bold text-[13px] text-slate-900 truncate">OneShopAI Team</span>
-                        <span className="text-[11px] text-slate-400 font-medium">1d ago</span>
-                      </div>
-                      <p className="text-[12px] text-slate-500 line-clamp-1">Welcome to the community! Explore the Opportunity Hub for openings.</p>
-                    </div>
-                  </div>
+                <div className="h-[180px] flex flex-col items-center justify-center bg-white">
+                  <MessageSquare size={32} strokeWidth={1.5} className="text-slate-400 mb-3 opacity-70" />
+                  <p className="text-[14px] font-medium text-slate-400">No messages yet</p>
                 </div>
-                <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
-                  <button className="text-[13px] font-bold text-[#7828F0] hover:text-[#6020c0] transition-colors w-full py-1">See all in Messages</button>
+                <div className="p-3 bg-white border-t border-slate-100 text-center rounded-b-2xl">
+                  <button className="text-[14px] font-bold text-[#7828F0] hover:text-[#6020c0] transition-colors w-full py-1">See all in Messages</button>
                 </div>
               </div>
             )}
@@ -225,60 +183,20 @@ export default function CommunityLayout({ children }: LayoutProps) {
               aria-label="Notifications"
             >
               <Bell size={19} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
             </button>
             {notificationsOpen && (
               <div
                 className="absolute top-full right-0 mt-1 w-[360px] bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-slate-100 flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-4"
               >
                 <div className="px-5 py-3.5 border-b border-slate-100 bg-white flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[16px] text-slate-900 tracking-tight">Notifications</h3>
-                    <span className="bg-red-50 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">3 new</span>
-                  </div>
-                  <button className="text-xs font-semibold text-[#7828F0] hover:underline">Mark all read</button>
+                  <h3 className="font-bold text-[16px] text-slate-900 tracking-tight">Notifications</h3>
                 </div>
-                <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
-                  <div className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3 bg-[#EEF2FF]/40">
-                    <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
-                      <Briefcase size={17} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-slate-800 leading-snug font-medium">
-                        <strong className="text-slate-900">Google DeepMind</strong> posted a new opportunity: <span className="text-[#3C3CF0] font-semibold">AI Research Resident</span>
-                      </p>
-                      <span className="text-[11px] text-slate-400 font-medium mt-1 block">15m ago</span>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 shrink-0"></div>
-                  </div>
-
-                  <div className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3 bg-[#EEF2FF]/40">
-                    <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm shrink-0">
-                      <Trophy size={17} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-slate-800 leading-snug font-medium">
-                        <strong className="text-slate-900">OneShopAI</strong> announced <span className="text-[#7828F0] font-semibold">Global Agentic AI Hackathon</span> with $50k prize pool!
-                      </p>
-                      <span className="text-[11px] text-slate-400 font-medium mt-1 block">1h ago</span>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-purple-600 mt-2 shrink-0"></div>
-                  </div>
-
-                  <div className="p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
-                      <GraduationCap size={17} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-slate-800 leading-snug">
-                        Applications opened for <strong className="text-slate-900">Generation Google STEM Fellowship</strong>
-                      </p>
-                      <span className="text-[11px] text-slate-400 font-medium mt-1 block">1d ago</span>
-                    </div>
-                  </div>
+                <div className="h-[200px] flex flex-col items-center justify-center bg-white">
+                  <Bell size={32} strokeWidth={1.5} className="text-slate-400 mb-3 opacity-70" />
+                  <p className="text-[14px] font-medium text-slate-400">No notifications yet</p>
                 </div>
-                <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
-                  <button className="text-[13px] font-bold text-[#7828F0] hover:text-[#6020c0] transition-colors w-full py-1">See all notifications</button>
+                <div className="p-3 bg-white border-t border-slate-100 text-center rounded-b-2xl">
+                  <button className="text-[14px] font-bold text-[#7828F0] hover:text-[#6020c0] transition-colors w-full py-1">See all notifications</button>
                 </div>
               </div>
             )}
